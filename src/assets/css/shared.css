@@ -1,0 +1,79 @@
+/*para quitar por defecto la configuracion de los inputs*/
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus {
+    border: none;
+    -webkit-text-fill-color: inherit;
+    transition: background-color 5000s ease-in-out 0s;
+}
+/*desabilitar por defecto los select*/
+select:-webkit-autofill,
+select:-webkit-autofill:hover, 
+select:-webkit-autofill:focus {
+    border: none;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    -webkit-text-fill-color: inherit;
+    transition: background-color 5000s ease-in-out 0s;
+}
+select {
+    border-color: transparent !important;
+    box-shadow: none !important;
+    border: none;
+    outline: none;
+    -webkit-text-fill-color: inherit;
+    transition: background-color 5000s ease-in-out 0s;
+}
+select:focus {
+    border: none !important; /* Elimina el borde al enfocar */
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+/*fin*/
+
+/*para los checkboxs*/
+[type='checkbox']{
+    background-color:#0059864D !important;
+    
+}
+[type='checkbox']:checked {
+    background-image: url("data:image/svg+xml,%3csvg aria-hidden='true' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 12'%3e %3cpath stroke='%23005986' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M1 5.917 5.724 10.5 15 1.5'/%3e %3c/svg%3e")!important;
+    background-repeat: no-repeat;
+    background-size: 0.55em 0.55em;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;;
+
+}
+
+/*para que abarque todo el height de la pantalla*/
+.elemento {
+    height: calc(100vh - 5em);
+}
+
+/* Estilo general para la barra de desplazamiento */
+::-webkit-scrollbar {
+    width: 10px; /* Anchura de la barra vertical */
+    height: 10px; /* Altura de la barra horizontal */
+}
+
+/* Estilo para la pista de la barra */
+::-webkit-scrollbar-track {
+    background: #fff; /* Color de fondo */
+    border-radius: 10px; /* Bordes redondeados */
+}
+
+/* Estilo para el pulgar de la barra */
+::-webkit-scrollbar-thumb {
+    background: #AAC7D5; /* Color de fondo */
+    border-radius: 10px; /* Bordes redondeados */
+}
+
+/* Estilo para el pulgar de la barra al pasar el cursor sobre ella */
+::-webkit-scrollbar-thumb:hover {
+    background: #005986; /* Color de fondo al pasar el cursor */
+}
+
+/* Si deseas personalizar los botones de la barra (que por defecto no se muestran) */
+::-webkit-scrollbar-button {
+    display: none; /* Esto oculta los botones, pero puedes darles un diseño si quieres mostrarlos */
+}

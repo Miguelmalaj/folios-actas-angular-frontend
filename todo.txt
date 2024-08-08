@@ -1,0 +1,16 @@
+inputs:
+
+1.-Seleccionable Generar Reverso:
+   [
+    1.- Generar Folio
+    2.- Generar Reverso
+    3.- Generar Reverso y Folio
+    4.- Generar Marco
+    5.- Generar Marco con Folio y Reverso
+   ]
+2.-Seleccionable Estado de la Respública
+3. Input text para CURP
+4. Input file (para el PDF).
+
+4.- Boton Generar
+
