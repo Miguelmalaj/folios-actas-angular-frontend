@@ -148,11 +148,11 @@
                         
                         <div class="ml-auto">
                         <input
-                              (click)="null"
-                              class="border-[1.5px] rounded-lg cursor-pointer w-auto min-[388px]:w-[80px] text-sm h-[25px] text-greenButton border-greenButton"
-                              type="button" id="btnPost"
-                              value="POST"
-                           />
+                           (click)="generateFile()"
+                           class="border-[1.5px] rounded-lg cursor-pointer w-auto min-[388px]:w-[80px] text-sm h-[25px] text-greenButton border-greenButton"
+                           type="button" id="btnPost"
+                           value="POST"
+                        />
                         </div>
                         
                      </div>
@@ -187,12 +187,9 @@
 
                   </div>
 
+                  <div class="flex flex-col justify-center items-center p-2 my-2 mx-4">
 
-                  <div class="relative flex flex-col my-0 ml-2 xs:ml-8 mb-2">
-
-                     <!-- Row 1 -->
-                     <div class="flex">
-
+                     <div class="flex mb-2">
                         <!-- campo 1 -->
                         <div>
                            <div class="flex flex-col sm:flex-row  sm:items-center sm:space-x-2 mb-1 sm:mb-0 pt-1">
@@ -218,7 +215,9 @@
                           </div>
                         </div>
                         <!-- Fin Campo 1 -->
-                        
+                     </div>
+
+                     <div class="flex mb-2">
                         <!-- campo 2-->
                         <div>
                            <div class="flex flex-col sm:flex-row  sm:items-center sm:space-x-2 mb-1 sm:mb-0 pt-1">
@@ -242,7 +241,9 @@
                           </div>
                         </div>
                         <!-- Fin Campo 2-->
-                        
+                     </div>
+
+                     <div class="flex mb-2">
                         <!-- campo 3-->
                         <div>
                            <div class="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-2 mb-1 sm:mb-0 pt-1">
@@ -262,11 +263,14 @@
                           </div>
                         </div>
                         <!-- Fin Campo 3-->
-                        
+                     </div>
+
+                     <div class="flex mb-2">
                         <!-- campo 4-->
                         <div>
-                           <label for="pdfFile">Upload PDF:</label>
+                           <label for="pdfFile" class="font-sans text-grayMenuText font-semibold text-xs">Upload PDF:</label>
                            <input 
+                              class="font-sans text-grayMenuText font-semibold text-xs"
                               type="file" 
                               id="pdfFile" 
                               (change)="onFileChange($event)" 
@@ -274,9 +278,7 @@
                            />
                         </div>
                         <!-- Fin Campo 4-->
-
                      </div>
-                     <!-- Fin Row 1 -->
 
                   </div>
 

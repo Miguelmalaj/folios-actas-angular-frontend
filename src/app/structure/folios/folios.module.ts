@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FoliosRoutingModule } from './folios-routing.module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FoliosComponent } from './components/main/folios.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -11,7 +12,8 @@ import { FoliosComponent } from './components/main/folios.component';
   imports: [
     CommonModule,
     FoliosRoutingModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    HttpClientModule
   ]
 })
 export class FoliosModule { }
