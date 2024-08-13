@@ -2,6 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { PDFDocument, rgb } from 'pdf-lib';
+// import BwipJs from 'bwip-js';
+import JsBarcode from 'jsbarcode';
 
 @Component({
   selector: 'app-folios',
@@ -32,8 +34,6 @@ export class FoliosComponent implements OnInit{
     this.http.get('assets/img/frame.pdf', { responseType: 'arraybuffer' }).subscribe(
       (data) => {
         this.frameBytes = new Uint8Array(data);
-
-        console.log('this.frameBytes', this.frameBytes)
         // this.checkIfBothFilesLoaded();
       },
       (error) => {
@@ -74,7 +74,6 @@ export class FoliosComponent implements OnInit{
     // Save the modified PDF
     this.modifiedPdfBytes = await frameDoc.save();
 
-    console.log('this.modifiedPdfBytes', this.modifiedPdfBytes)
   }
 
   initializeForm(): void {
@@ -95,20 +94,16 @@ export class FoliosComponent implements OnInit{
       this.form.patchValue({
         pdf: file
       });
-      this.form.get('pdfFile')?.updateValueAndValidity();
+      this.form.get('pdf')?.updateValueAndValidity();
 
       /* Modify PDF */
-      /* TODO: que oopcion es?? */
       const fileReader = new FileReader();
       fileReader.onload = async ( e: any ) => {
-        /* const pdfBytes = new Uint8Array(e.target.result);
-        this.modifiedPdfBytes = await this.addFrameToPDF(pdfBytes); */
         this.birthCertificateBytes = new Uint8Array(e.target.result);
       }
       fileReader.readAsArrayBuffer(file);
 
     } else {
-      console.log('first')
       // Handle the error (file is not a PDF)
       alert('Please upload a valid PDF file.');
 
@@ -141,11 +136,138 @@ export class FoliosComponent implements OnInit{
   async generateFile() {
 
 
-    if ( !this.form.valid ) return;  
+    if ( !this.form.valid ) return;
+    
+    switch ( this.form.get('action')?.value ) {
+      case '1':
+        console.log('option 1')
+        this.addBirthCertificateAfolio();
+        return;
+      
+      case '2':
+        console.log('option 2')
+        
+        return;
+      
+      case '3':
+        console.log('option 3')
+        return;
+
+      case '4':
+        console.log('option 4')
+        this.GenerateFrame();
+        return;
+      
+      case '5':
+        console.log('option 5')
+        return;
+    
+      default:
+        console.log('any option')
+        return;
+    }
+
+    return;
+  }
+
+  /* async generateBarcode(folio: string): Promise<Uint8Array> {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      bwipjs.toCanvas(canvas, {
+        bcid: 'code39',       // Barcode type
+        text: folio,          // Text to encode
+        scale: 3,             // 3x scaling factor
+        height: 10,           // Bar height, in millimeters
+        includetext: true,    // Show human-readable text
+        textxalign: 'center', // Always good to set this
+      }, (err: any) => {
+        if (err) {
+          reject(err);
+        } else {
+          // Convert the canvas to a PNG image and return it as Uint8Array
+          canvas.toBlob((blob) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const arrayBuffer = reader.result as ArrayBuffer;
+              resolve(new Uint8Array(arrayBuffer));
+            };
+            reader.readAsArrayBuffer(blob as Blob);
+          });
+        }
+      });
+    });
+  } */
+    async generateBarcode(folio: string): Promise<Uint8Array> {
+      const canvas = document.createElement('canvas');
+      JsBarcode(canvas, folio, {
+        format: 'CODE39',        // Barcode format
+        displayValue: false,      // Display human-readable text
+        height: 15,          // Barcode height
+        width:1
+      });
+  
+      // Convert canvas to a PNG image
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const arrayBuffer = reader.result as ArrayBuffer;
+            resolve(new Uint8Array(arrayBuffer));
+          };
+          reader.readAsArrayBuffer(blob as Blob);
+        });
+      });
+    }
+
+  async addBirthCertificateAfolio() {
+    if ( !this.birthCertificateBytes ) return;
+    // Generate the barcode for the folio
+    const barcodeBytes = await this.generateBarcode('A01 0028749');
+
+    // Load the birth certificate PDF and convert it to an image
+    const birthCertificateDoc = await PDFDocument.load( this.birthCertificateBytes );
+    const [birthCertificatePage] = birthCertificateDoc.getPages();
+
+    // Get dimensions of the birthCertificatePage
+    const { width, height } = birthCertificatePage.getSize();
+
+    // Embed the barcode image
+    const barcodeImage = await birthCertificateDoc.embedPng(barcodeBytes);
+
+    birthCertificatePage.drawImage(barcodeImage, {
+      x: 50,         // Position from the left
+      y: height - 93, // Position from the bottom (top of page)
+      width: 126,    // Adjust width as needed
+      height: 25,    // Adjust height as needed
+    })
+
+    birthCertificatePage.drawText('Folio', {
+      x: 50,
+      y: height - 50, // Adjust y coordinate as needed
+      size: 12,
+      color: rgb(0, 0, 0),
+    });
+    
+    birthCertificatePage.drawText('A01 0028749', {
+      x: 60,
+      y: height - 70, // Adjust y coordinate for the second line
+      size: 12,
+      color: rgb(0, 0, 0),
+    });
+
+    // Save the PDF and trigger download
+    const pdfBytes = await birthCertificateDoc.save();
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'folio.pdf';
+    link.click();
+
+  }
+
+  async GenerateFrame() {
 
     await this.checkIfBothFilesLoaded();
-
-    console.log('when we generate this is the file:', this.modifiedPdfBytes)
 
     if ( this.modifiedPdfBytes ) {
 
@@ -159,7 +281,8 @@ export class FoliosComponent implements OnInit{
     } else {
       console.log('segundo')
       alert('Please upload a PDF file.');
-    }
+    } 
+
   }
 
 }
