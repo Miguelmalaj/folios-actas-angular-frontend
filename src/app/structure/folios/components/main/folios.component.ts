@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { PDFDocument, rgb } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 // import BwipJs from 'bwip-js';
 import JsBarcode from 'jsbarcode';
 
@@ -18,6 +18,7 @@ export class FoliosComponent implements OnInit{
 
   //formulario
   form!: FormGroup;
+  
 
 
   constructor( private fb: FormBuilder, private http: HttpClient ) {
@@ -110,29 +111,6 @@ export class FoliosComponent implements OnInit{
     }
   }
 
- /*  async addFrameToPDF(pdfBytes: Uint8Array): Promise<Uint8Array> {
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-    const pages = pdfDoc.getPages();
-
-    for (const page of pages) {
-      const { width, height } = page.getSize();
-
-      // Add a rectangle/frame around the entire page
-      const borderWidth = 10; // Customize the thickness of the border
-      page.drawRectangle({
-        x: borderWidth / 2,
-        y: borderWidth / 2,
-        width: width - borderWidth,
-        height: height - borderWidth,
-        borderColor: rgb(0, 0, 0), // Black frame color
-        borderWidth: borderWidth,
-      });
-    }
-
-    // Save the modified PDF
-    return await pdfDoc.save();
-  } */
-
   async generateFile() {
 
 
@@ -170,33 +148,6 @@ export class FoliosComponent implements OnInit{
     return;
   }
 
-  /* async generateBarcode(folio: string): Promise<Uint8Array> {
-    return new Promise((resolve, reject) => {
-      const canvas = document.createElement('canvas');
-      bwipjs.toCanvas(canvas, {
-        bcid: 'code39',       // Barcode type
-        text: folio,          // Text to encode
-        scale: 3,             // 3x scaling factor
-        height: 10,           // Bar height, in millimeters
-        includetext: true,    // Show human-readable text
-        textxalign: 'center', // Always good to set this
-      }, (err: any) => {
-        if (err) {
-          reject(err);
-        } else {
-          // Convert the canvas to a PNG image and return it as Uint8Array
-          canvas.toBlob((blob) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const arrayBuffer = reader.result as ArrayBuffer;
-              resolve(new Uint8Array(arrayBuffer));
-            };
-            reader.readAsArrayBuffer(blob as Blob);
-          });
-        }
-      });
-    });
-  } */
     async generateBarcode(folio: string): Promise<Uint8Array> {
       const canvas = document.createElement('canvas');
       JsBarcode(canvas, folio, {
@@ -221,8 +172,12 @@ export class FoliosComponent implements OnInit{
 
   async addBirthCertificateAfolio() {
     if ( !this.birthCertificateBytes ) return;
+
+    const randomNumber1 = this.generateRandomNumberString(1);
+    const randomNumber7 = this.generateRandomNumberString(7);
+
     // Generate the barcode for the folio
-    const barcodeBytes = await this.generateBarcode('A01 0028749');
+    const barcodeBytes = await this.generateBarcode(`A0${ randomNumber1 } ${ randomNumber7 }`); 
 
     // Load the birth certificate PDF and convert it to an image
     const birthCertificateDoc = await PDFDocument.load( this.birthCertificateBytes );
@@ -234,6 +189,9 @@ export class FoliosComponent implements OnInit{
     // Embed the barcode image
     const barcodeImage = await birthCertificateDoc.embedPng(barcodeBytes);
 
+    // Load the bold font
+  const boldFont = await birthCertificateDoc.embedFont(StandardFonts.HelveticaBold);
+
     birthCertificatePage.drawImage(barcodeImage, {
       x: 50,         // Position from the left
       y: height - 93, // Position from the bottom (top of page)
@@ -241,17 +199,19 @@ export class FoliosComponent implements OnInit{
       height: 25,    // Adjust height as needed
     })
 
-    birthCertificatePage.drawText('Folio', {
-      x: 50,
-      y: height - 50, // Adjust y coordinate as needed
+    birthCertificatePage.drawText('FOLIO', {
+      x: 70,
+      y: height - 60, // Adjust y coordinate as needed
       size: 12,
+      font: boldFont,
       color: rgb(0, 0, 0),
     });
     
-    birthCertificatePage.drawText('A01 0028749', {
-      x: 60,
+    birthCertificatePage.drawText(`A0${ randomNumber1 } ${ randomNumber7 }`, {
+      x: 70,
       y: height - 70, // Adjust y coordinate for the second line
       size: 12,
+      font: boldFont,
       color: rgb(0, 0, 0),
     });
 
@@ -283,6 +243,19 @@ export class FoliosComponent implements OnInit{
       alert('Please upload a PDF file.');
     } 
 
+  }
+
+  generateRandomNumberString(length: number): string {
+    // Calculate the maximum number for the given length
+    const maxNumber = Math.pow(10, length) - 1;
+  
+    // Generate a random number between 0 and the maximum number
+    const randomNumber = Math.floor(Math.random() * (maxNumber + 1));
+  
+    // Convert the number to a string and pad with leading zeros
+    const randomNumberString = randomNumber.toString().padStart(length, '0');
+  
+    return randomNumberString;
   }
 
 }
