@@ -151,10 +151,10 @@ export class FoliosComponent implements OnInit{
     async generateBarcode(folio: string): Promise<Uint8Array> {
       const canvas = document.createElement('canvas');
       JsBarcode(canvas, folio, {
-        format: 'CODE39',        // Barcode format
+        format: 'CODE128A',        // Barcode format
         displayValue: false,      // Display human-readable text
         height: 15,          // Barcode height
-        width:1
+        width: 5,
       });
   
       // Convert canvas to a PNG image
@@ -200,17 +200,17 @@ export class FoliosComponent implements OnInit{
     })
 
     birthCertificatePage.drawText('FOLIO', {
-      x: 70,
-      y: height - 60, // Adjust y coordinate as needed
-      size: 12,
+      x: 78,
+      y: height - 57, // Adjust y coordinate as needed
+      size: 11,
       font: boldFont,
       color: rgb(0, 0, 0),
     });
     
     birthCertificatePage.drawText(`A0${ randomNumber1 } ${ randomNumber7 }`, {
       x: 70,
-      y: height - 70, // Adjust y coordinate for the second line
-      size: 12,
+      y: height - 71, // Adjust y coordinate for the second line
+      size: 11,
       font: boldFont,
       color: rgb(0, 0, 0),
     });
