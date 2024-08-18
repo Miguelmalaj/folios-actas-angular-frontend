@@ -217,7 +217,7 @@
                         <!-- Fin Campo 1 -->
                      </div>
 
-                     <div class="flex mb-2">
+                     <div class="flex mb-2" [ngClass]="{'hidden': !hasState}">
                         <!-- campo 2-->
                         <div>
                            <div class="flex flex-col sm:flex-row  sm:items-center sm:space-x-2 mb-1 sm:mb-0 pt-1">
@@ -231,9 +231,10 @@
                                   <select id="country" formControlName="state"
                                       class="relative flex-grow w-full">
                                       <!-- Opciones de ejemplo, reemplaza con tus propias opciones -->
-                                      <option value="1">Sinaloa</option>
-                                      <option value="2">Chiapas</option>
-                                      <option value="3">Mexico</option>
+                                      <option value=""></option>
+                                      <option value="SINALOA">SINALOA</option>
+                                      <option value="BAJACALIFORNIA">BAJA CALIFORNIA</option>
+                                      <option value="BAJACALIFORNIASUR">BAJA CALIFORNIA SUR</option>
       
                                   </select>
                                   <div class="h-px bg-grayGridText"></div>
@@ -268,7 +269,7 @@
                      <div class="flex mb-2">
                         <!-- campo 4-->
                         <div>
-                           <label for="pdfFile" class="font-sans text-grayMenuText font-semibold text-xs">Upload PDF:</label>
+                           <label for="pdfFile" class="font-sans text-grayMenuText font-semibold text-xs">Agregar PDF:</label>
                            <input 
                               class="font-sans text-grayMenuText font-semibold text-xs"
                               type="file" 

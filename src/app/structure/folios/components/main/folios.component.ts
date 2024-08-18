@@ -1,34 +1,68 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 // import BwipJs from 'bwip-js';
 import JsBarcode from 'jsbarcode';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-folios',
   templateUrl: './folios.component.html',
   styleUrl: './folios.component.css'
 })
-export class FoliosComponent implements OnInit{
+export class FoliosComponent implements OnInit, OnDestroy {
   //Uint8Array
   birthCertificateBytes: Uint8Array | null = null;
   frameBytes: Uint8Array | null = null;
+  ReversePDFBytes: Uint8Array | null = null;
   modifiedPdfBytes: Uint8Array | null = null;
 
   //formulario
   form!: FormGroup;
-  
+  //suscription
+  actionSubscription!: Subscription;
+  stateSubscription!: Subscription;
 
 
   constructor( private fb: FormBuilder, private http: HttpClient ) {
     // Load the birth certificate frame
     this.loadFramePdf();
+    
+    /* it's being loaded sinaloa because it's the first option */
+    this.loadReversePDF( 'SINALOA' );
   }
 
   ngOnInit(): void {
     this.initializeForm();
 
+  }
+
+  loadReversePDF( path: string ) {
+
+    
+    const completedPath = `assets/img/${ path }.pdf`;
+
+    console.log('loadReversePDF completedPath', completedPath)
+
+    this.http.get(completedPath, { responseType: 'arraybuffer' }).subscribe(
+      (data) => {
+        this.ReversePDFBytes = new Uint8Array(data);
+        // this.checkIfBothFilesLoaded();
+      },
+      (error) => {
+        console.error('Could not load frame PDF from assets:', error);
+      }
+    );
+  }
+
+  ngOnDestroy(): void {
+    if (this.actionSubscription) {
+      this.actionSubscription.unsubscribe();
+    }
+    if (this.stateSubscription) {
+      this.stateSubscription.unsubscribe();
+    }
   }
 
   loadFramePdf() {
@@ -81,10 +115,40 @@ export class FoliosComponent implements OnInit{
 
     this.form = this.fb.group({
       action: ['4', Validators.required],
-      state: ['1', Validators.required],
+      state: ['', Validators.required],
       curp: ['', Validators.required],
       pdf: [null, Validators.required]
     })
+
+    this.loadSuscriptions();
+
+  }
+
+  loadSuscriptions() {
+    /* Listener | Suscription to actions */
+    this.actionSubscription = this.form.get('action')!.valueChanges.subscribe(value => {
+      console.log('Action control value changed:', value);
+      // Perform any logic based on the action control value change
+    });
+    
+    this.stateSubscription = this.form.get('state')!.valueChanges.subscribe(value => {
+      console.log('state control value changed:', value);
+      // Perform any logic based on the action control value change
+      if ( value !== "" ) this.loadReversePDF( value );
+    });
+  }
+
+  get hasState(): boolean {
+
+   const currentActionValue = this.form.get('action')?.value
+
+    if ( 
+      currentActionValue === '2' || 
+      currentActionValue === '3' || 
+      currentActionValue === '3' 
+    ) return true;
+
+    return false;
 
   }
 
@@ -124,7 +188,7 @@ export class FoliosComponent implements OnInit{
       
       case '2':
         console.log('option 2')
-        
+        this.addReverse();
         return;
       
       case '3':
@@ -170,7 +234,55 @@ export class FoliosComponent implements OnInit{
       });
     }
 
+  async addReverse() {
+    /* when birth certificate is not loaded */
+    if ( !this.birthCertificateBytes ) return;
+    if (!this.ReversePDFBytes) return;
+
+    try {
+      // Load the birth certificate PDF
+      const birthCertificateDoc = await PDFDocument.load(this.birthCertificateBytes);
+      
+      // Load the reverse PDF
+      const reverseDoc = await PDFDocument.load(this.ReversePDFBytes);
+  
+      // Get the pages from the reverse PDF
+      const reversePages = await birthCertificateDoc.copyPages(reverseDoc, reverseDoc.getPageIndices());
+  
+      // Add the reverse PDF pages to the birth certificate document
+      reversePages.forEach((page) => {
+        birthCertificateDoc.addPage(page);
+      });
+  
+      // Serialize the combined PDF to bytes
+      const combinedPdfBytes = await birthCertificateDoc.save();
+  
+      // Create a Blob from the combined PDF bytes
+      const blob = new Blob([combinedPdfBytes], { type: 'application/pdf' });
+  
+      // Create a link element
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'Acta_con_Reverso.pdf';
+  
+      // Append the link to the body (required for Firefox)
+      document.body.appendChild(link);
+  
+      // Trigger the download by programmatically clicking the link
+      link.click();
+  
+      // Clean up by removing the link and revoking the object URL
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error('Error adding reverse PDF:', error);
+    }
+
+
+  }
+
   async addBirthCertificateAfolio() {
+    /* when birth certificate is not loaded */
     if ( !this.birthCertificateBytes ) return;
 
     const randomNumber1 = this.generateRandomNumberString(1);
