@@ -5,6 +5,7 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 // import BwipJs from 'bwip-js';
 import JsBarcode from 'jsbarcode';
 import { Subscription } from 'rxjs';
+import * as QRCode from 'qrcode';
 
 @Component({
   selector: 'app-folios',
@@ -177,7 +178,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
   async generateFile() {
 
-
+    //TODO: en ocasiones no tendremos algun valor del formaluraio y debemos permitir.
     if ( !this.form.valid ) return;
     
     switch ( this.form.get('action')?.value ) {
@@ -234,10 +235,35 @@ export class FoliosComponent implements OnInit, OnDestroy {
       });
     }
 
+    async generateQRCode(curp: string): Promise<Uint8Array> {
+      const canvas = document.createElement('canvas');
+    
+      // Generate the QR code and draw it on the canvas
+      await QRCode.toCanvas(canvas, curp, {
+        errorCorrectionLevel: 'H', // High error correction level
+        width: 200,                // Width of the QR code
+        margin: 1,                 // Margin around the QR code
+      });
+    
+      // Convert canvas to a PNG image and return it as a Uint8Array
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const arrayBuffer = reader.result as ArrayBuffer;
+            resolve(new Uint8Array(arrayBuffer));
+          };
+          reader.readAsArrayBuffer(blob as Blob);
+        });
+      });
+    }
+
   async addReverse() {
     /* when birth certificate is not loaded */
     if ( !this.birthCertificateBytes ) return;
     if (!this.ReversePDFBytes) return;
+
+    // form must have CURP written
 
     try {
       // Load the birth certificate PDF
@@ -245,6 +271,23 @@ export class FoliosComponent implements OnInit, OnDestroy {
       
       // Load the reverse PDF
       const reverseDoc = await PDFDocument.load(this.ReversePDFBytes);
+
+      const CURPValue = this.form.get('curp')?.value
+
+      const qrCodeBytes = await this.generateQRCode( CURPValue );
+
+      // Embed the QR code image into the reverse PDF
+      const qrCodeImage = await reverseDoc.embedPng(qrCodeBytes);
+      const firstPage = reverseDoc.getPage(0); // Get the first page of the reverseDoc
+
+      // Add the QR code to the first page
+      const { width, height } = firstPage.getSize();
+      firstPage.drawImage(qrCodeImage, {
+        x: 20, // Adjust the x position to place it on the top-right corner
+        y: 20, // Adjust the y position to place it on the top-right corner
+        width: 80,       // Set the desired width of the QR code
+        height: 80,      // Set the desired height of the QR code
+      });
   
       // Get the pages from the reverse PDF
       const reversePages = await birthCertificateDoc.copyPages(reverseDoc, reverseDoc.getPageIndices());
