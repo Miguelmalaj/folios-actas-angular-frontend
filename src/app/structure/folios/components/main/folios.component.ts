@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, degrees } from 'pdf-lib';
 // import BwipJs from 'bwip-js';
 import JsBarcode from 'jsbarcode';
 import { Subscription } from 'rxjs';
@@ -184,7 +184,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
     switch ( this.form.get('action')?.value ) {
       case '1':
         console.log('option 1')
-        this.addBirthCertificateAfolio();
+        this.addFolioToBirthCertificate();
         return;
       
       case '2':
@@ -271,6 +271,32 @@ export class FoliosComponent implements OnInit, OnDestroy {
       
       // Load the reverse PDF
       const reverseDoc = await PDFDocument.load(this.ReversePDFBytes);
+      const [reversePage] = reverseDoc.getPages();
+      const {  height:heightAlias } = reversePage.getSize();
+      // Load the bold font
+      const boldFont = await reverseDoc.embedFont(StandardFonts.HelveticaBold);
+      const size = 5;
+      let startY = heightAlias - 90; // initial y coordinate
+      const spacing = size;
+      const text = 'BEHE190618HDFRRLA1';
+
+       /* Medida para Baja California */
+       reversePage.drawText(text, {
+        x: 15,
+        y: heightAlias - 90, // Adjust y coordinate as needed
+        size: 5,
+        // font: boldFont,
+        color: rgb(0, 0, 0),
+      });
+
+      reversePage.drawText(text, {
+        x: 15,
+        y: startY,
+        size: size,
+        color: rgb(0, 0, 0),
+        rotate: degrees(270),
+      });
+     
 
       const CURPValue = this.form.get('curp')?.value
 
@@ -324,7 +350,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
   }
 
-  async addBirthCertificateAfolio() {
+  async addFolioToBirthCertificate() {
     /* when birth certificate is not loaded */
     if ( !this.birthCertificateBytes ) return;
 
