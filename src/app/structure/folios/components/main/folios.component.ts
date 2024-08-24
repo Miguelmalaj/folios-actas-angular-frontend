@@ -283,10 +283,10 @@ export class FoliosComponent implements OnInit, OnDestroy {
       // Add the QR code to the first page
       const { width, height } = firstPage.getSize();
       firstPage.drawImage(qrCodeImage, {
-        x: 20, // Adjust the x position to place it on the top-right corner
+        x: 15, // Adjust the x position to place it on the top-right corner
         y: 20, // Adjust the y position to place it on the top-right corner
-        width: 80,       // Set the desired width of the QR code
-        height: 80,      // Set the desired height of the QR code
+        width: 65,       // Set the desired width of the QR code
+        height: 65,      // Set the desired height of the QR code
       });
   
       // Get the pages from the reverse PDF
