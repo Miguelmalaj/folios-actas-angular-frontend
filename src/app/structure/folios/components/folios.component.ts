@@ -1,11 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { PDFDocument, rgb, StandardFonts, degrees } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, degrees, PDFPage } from 'pdf-lib';
 // import BwipJs from 'bwip-js';
 import JsBarcode from 'jsbarcode';
 import { Subscription } from 'rxjs';
 import * as QRCode from 'qrcode';
+import fs from 'fs';
+import { FoliosService } from './folios-service.service';
 
 @Component({
   selector: 'app-folios',
@@ -26,7 +28,11 @@ export class FoliosComponent implements OnInit, OnDestroy {
   stateSubscription!: Subscription;
 
 
-  constructor( private fb: FormBuilder, private http: HttpClient ) {
+  constructor( 
+    private fb: FormBuilder, 
+    private http: HttpClient,
+    private foliosService: FoliosService 
+  ) {
     // Load the birth certificate frame
     this.loadFramePdf();
     
@@ -274,29 +280,17 @@ export class FoliosComponent implements OnInit, OnDestroy {
       const [reversePage] = reverseDoc.getPages();
       const {  height:heightAlias } = reversePage.getSize();
       // Load the bold font
-      const boldFont = await reverseDoc.embedFont(StandardFonts.HelveticaBold);
-      const size = 5;
-      let startY = heightAlias - 90; // initial y coordinate
-      const spacing = size;
-      const text = 'BEHE190618HDFRRLA1';
+      // const boldFont = await reverseDoc.embedFont(StandardFonts.HelveticaBold);
 
-       /* Medida para Baja California */
-       reversePage.drawText(text, {
-        x: 15,
-        y: heightAlias - 90, // Adjust y coordinate as needed
-        size: 5,
-        // font: boldFont,
-        color: rgb(0, 0, 0),
-      });
+      // Draw a white rectangle to cover the content
+        reversePage.drawRectangle({
+          x: 5,
+          y: 690,
+          width: 90,
+          height: 100,
+          color: rgb(1, 1, 1), // White color
+        });
 
-      reversePage.drawText(text, {
-        x: 15,
-        y: startY,
-        size: size,
-        color: rgb(0, 0, 0),
-        rotate: degrees(270),
-      });
-     
 
       const CURPValue = this.form.get('curp')?.value
 
@@ -308,13 +302,41 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
       // Add the QR code to the first page
       const { width, height } = firstPage.getSize();
+
+      /* Top QR */
       firstPage.drawImage(qrCodeImage, {
-        x: 15, // Adjust the x position to place it on the top-right corner
-        y: 20, // Adjust the y position to place it on the top-right corner
-        width: 65,       // Set the desired width of the QR code
-        height: 65,      // Set the desired height of the QR code
+        x: 20,
+        y: 710,
+        width: 65,
+        height: 65,
       });
+
+      this.writeCURPAroundQR( reversePage )
+
+      /* Bottom QR */
+      firstPage.drawImage(qrCodeImage, {
+        x: 20,
+        y: 20,
+        width: 65,
+        height: 65,
+      });
+
+      // Load the font file
+      /* TODO: PENDING TO SET CORRECT FONT */
+      /* const bitterFontBytes = fs.readFileSync('src/assets/fonts/Bitter-Bold.ttf');
   
+      // Embed the font into the document
+      const bitterFont = await reverseDoc.embedFont(bitterFontBytes);
+
+      // Example: Draw text with the Bitter font
+      reversePage.drawText('Text with Bitter font', {
+        x: 50,
+        y: heightAlias - 100,
+        size: 12,
+        font: bitterFont,
+        color: rgb(0, 0, 0),
+      }); */
+
       // Get the pages from the reverse PDF
       const reversePages = await birthCertificateDoc.copyPages(reverseDoc, reverseDoc.getPageIndices());
   
@@ -437,6 +459,51 @@ export class FoliosComponent implements OnInit, OnDestroy {
     const randomNumberString = randomNumber.toString().padStart(length, '0');
   
     return randomNumberString;
+  }
+
+  writeCURPAroundQR( reversePage: PDFPage ) {
+
+    const text = 'BEHE190618HDFRRLA9';
+    const CURPValue = this.form.get('curp')?.value
+   // heightAlias 792
+
+    /* Medida para Baja California */
+     /*horizontal bottom*/
+    reversePage.drawText(CURPValue, {
+      x: 24,
+      y: 705, // Adjust y coordinate as needed
+      size: 5,
+      // font: boldFont,
+      color: rgb(0, 0, 0),
+    });
+
+    /*horizontal top*/
+    reversePage.drawText(CURPValue, {
+      x: 24,
+      y: 776, // Adjust y coordinate as needed
+      size: 5,
+      // font: boldFont,
+      color: rgb(0, 0, 0),
+    });
+
+    /*vertical left*/
+    reversePage.drawText(CURPValue, {
+      x: 15,
+      y: 771,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(270),
+    });
+    
+    /*vertical right*/
+    reversePage.drawText(CURPValue, {
+      x: 87,
+      y: 771,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(270),
+    });
+
   }
 
 }

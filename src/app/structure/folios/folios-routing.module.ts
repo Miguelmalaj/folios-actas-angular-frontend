@@ -1,5 +1,5 @@
 import { RouterModule, Routes } from "@angular/router";
-import { FoliosComponent } from "./components/main/folios.component";
+import { FoliosComponent } from "./components/folios.component";
 import { NgModule } from "@angular/core";
 
 const routes: Routes = [
