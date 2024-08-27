@@ -122,7 +122,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
     this.form = this.fb.group({
       action: ['4', Validators.required],
-      state: ['', Validators.required],
+      state: [''],
       curp: ['', Validators.required],
       pdf: [null, Validators.required]
     })
@@ -183,6 +183,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
   }
 
   async generateFile() {
+    console.log('bbb')
 
     //TODO: en ocasiones no tendremos algun valor del formaluraio y debemos permitir.
     if ( !this.form.valid ) return;
@@ -281,6 +282,39 @@ export class FoliosComponent implements OnInit, OnDestroy {
       const {  height:heightAlias } = reversePage.getSize();
       // Load the bold font
       // const boldFont = await reverseDoc.embedFont(StandardFonts.HelveticaBold);
+
+      // const boldFont = await reverseDoc.embedFont(StandardFonts.TimesRoman);
+      const boldFont = await reverseDoc.embedFont(StandardFonts.TimesRomanBold);
+      const Helvetica = await reverseDoc.embedFont(StandardFonts.Helvetica);
+      // Draw "gob" in black red
+      reversePage.drawText('gob', {
+        x: 21,
+        y: 95, // Adjust y coordinate as needed
+        size: 20,
+        font: boldFont,
+        color: rgb(0.576, 0.173, 0.286), // Black red color
+      });
+
+      // Calculate the width of the "gob" text to position ".mx" correctly
+      const gobWidth = boldFont.widthOfTextAtSize('gob', 18);
+
+      // Draw ".mx" in light gray
+      reversePage.drawText('.mx', {
+        x: 23 + gobWidth, // Adjust x coordinate based on the width of "gob"
+        y: 95, // Same y coordinate
+        size: 20,
+        font: boldFont,
+        color: rgb(0.5, 0.5, 0.5), // Light gray color
+      });
+      
+      reversePage.drawText('Validación', {
+        x: 26, // Adjust x coordinate based on the width of "gob"
+        y: 120, // Same y coordinate
+        size: 12,
+        font: Helvetica,
+        color: rgb(0.5, 0.5, 0.5), // Light gray color
+      });
+
 
       // Draw a white rectangle to cover the content
         reversePage.drawRectangle({
@@ -429,6 +463,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
   }
 
   async GenerateFrame() {
+    console.log('aaabbcc')
 
     await this.checkIfBothFilesLoaded();
 
