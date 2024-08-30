@@ -197,6 +197,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
       case '2':
         console.log('option 2')
         this.addReverse();
+        // this.extras();
         return;
       
       case '3':
@@ -279,7 +280,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
       // Load the reverse PDF
       const reverseDoc = await PDFDocument.load(this.ReversePDFBytes);
       const [reversePage] = reverseDoc.getPages();
-      const {  height:heightAlias } = reversePage.getSize();
+      // const {  height:heightAlias } = reversePage.getSize();
       // Load the bold font
       // const boldFont = await reverseDoc.embedFont(StandardFonts.HelveticaBold);
 
@@ -404,6 +405,44 @@ export class FoliosComponent implements OnInit, OnDestroy {
     }
 
 
+  }
+
+  async extras() {
+    if (!this.ReversePDFBytes) return;
+    try {
+      
+      const reverseDoc = await PDFDocument.load(this.ReversePDFBytes);
+        const [reversePage] = reverseDoc.getPages();
+  
+        // Draw a white rectangle to cover the content
+        reversePage.drawRectangle({
+          x: 27,
+          y: 20,
+          width: 95,
+          height: 100,
+          color: rgb(1, 1, 1), // White color
+        });
+  
+        const finaldoc = await reverseDoc.save()
+  
+        const blob = new Blob([finaldoc], { type: 'application/pdf' });
+        // Create a link element
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Acta_con_Reverso.pdf';
+    
+        // Append the link to the body (required for Firefox)
+        document.body.appendChild(link);
+    
+        // Trigger the download by programmatically clicking the link
+        link.click();
+    
+        // Clean up by removing the link and revoking the object URL
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error('Error adding reverse PDF:', error);
+    }
   }
 
   async addFolioToBirthCertificate() {
