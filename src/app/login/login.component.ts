@@ -59,7 +59,7 @@ export class LoginComponent implements AfterViewInit {
 
       const { email, password } = this.form;
 
-      if (email === 'shino' && password === 'pishon') {
+      if (email === 'usuario' && password === 'prueba') {
         // Credentials are valid, proceed with the login process
         console.log('Login successful!');
         // You can navigate to another page or perform other actions here

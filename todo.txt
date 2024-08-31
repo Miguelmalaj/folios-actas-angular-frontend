@@ -1,4 +1,9 @@
-1.- Buscar fuente google fonts para 
-   el escrito Gob.mx. buscar el color guinda
 
-2.- 
+
+Validacoines:
+
+colocar una opcion en blanco en seleccionar accion:
+(porque será por permisos)
+
+si el susuario click en generar sin seleccionar, 
+avisar, con sweet alert.

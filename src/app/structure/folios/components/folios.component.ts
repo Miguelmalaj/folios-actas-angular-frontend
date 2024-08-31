@@ -19,7 +19,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
   birthCertificateBytes: Uint8Array | null = null;
   frameBytes: Uint8Array | null = null;
   ReversePDFBytes: Uint8Array | null = null;
-  modifiedPdfBytes: Uint8Array | null = null;
+  birthCertificateWithFrame: Uint8Array | null = null;
 
   //formulario
   form!: FormGroup;
@@ -31,13 +31,14 @@ export class FoliosComponent implements OnInit, OnDestroy {
   constructor( 
     private fb: FormBuilder, 
     private http: HttpClient,
-    private foliosService: FoliosService 
+    private foliosService: FoliosService ,
   ) {
     // Load the birth certificate frame
     this.loadFramePdf();
     
-    /* it's being loaded sinaloa because it's the first option */
-    this.loadReversePDF( 'SINALOA' );
+    /* it's being loaded AGUASCALIENTES because it's the first option */
+    this.loadReversePDF( 'AGUASCALIENTES' );
+
   }
 
   ngOnInit(): void {
@@ -46,11 +47,8 @@ export class FoliosComponent implements OnInit, OnDestroy {
   }
 
   loadReversePDF( path: string ) {
-
     
     const completedPath = `assets/img/${ path }.pdf`;
-
-    console.log('loadReversePDF completedPath', completedPath)
 
     this.http.get(completedPath, { responseType: 'arraybuffer' }).subscribe(
       (data) => {
@@ -84,19 +82,18 @@ export class FoliosComponent implements OnInit, OnDestroy {
     );
   }
 
-  async checkIfBothFilesLoaded() {
-    if (this.birthCertificateBytes && this.frameBytes) {
-      await this.addBirthCertificateToFrame(this.birthCertificateBytes, this.frameBytes);
-    }
-  }
+  
+  async addFrame( hasFolio: boolean ) {
 
-  async addBirthCertificateToFrame(birthCertificateBytes: Uint8Array, frameBytes: Uint8Array) {
+    if (!this.birthCertificateBytes) return;
+    if (!this.frameBytes) return;
+
     // Load the frame PDF
-    const frameDoc = await PDFDocument.load(frameBytes);
+    const frameDoc = await PDFDocument.load(this.frameBytes);
     const [framePage] = frameDoc.getPages();
 
     // Load the birth certificate PDF and convert it to an image
-    const birthCertificateDoc = await PDFDocument.load(birthCertificateBytes);
+    const birthCertificateDoc = await PDFDocument.load(this.birthCertificateBytes);
     const [birthCertificatePage] = birthCertificateDoc.getPages();
     
     // Embed the birth certificate page in the frame document
@@ -114,14 +111,32 @@ export class FoliosComponent implements OnInit, OnDestroy {
     });
 
     // Save the modified PDF
-    this.modifiedPdfBytes = await frameDoc.save();
+    this.birthCertificateWithFrame = await frameDoc.save();
+
+    if ( hasFolio ) {
+      this.addFolio( true, true ); //has reverse: true
+      return;
+    }
+
+    this.generateBlob( this.birthCertificateWithFrame, 'ACTA-CON-MARCO' );
+
+    
+  }
+
+  generateBlob( finalDoc: Uint8Array, fileName: string ) {
+    /* Generate a Blob */
+    const blob = new Blob([finalDoc], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${ fileName }.pdf`;
+    link.click();
 
   }
 
   initializeForm(): void {
 
     this.form = this.fb.group({
-      action: ['4', Validators.required],
+      action: ['0', Validators.required],
       state: [''],
       curp: ['', Validators.required],
       pdf: [null, Validators.required]
@@ -183,38 +198,45 @@ export class FoliosComponent implements OnInit, OnDestroy {
   }
 
   async generateFile() {
-    console.log('bbb')
+
+    if ( this.form.get('action')?.value === '0' ) {
+      alert('Seleccione una acción.')
+      return;
+    }
 
     //TODO: en ocasiones no tendremos algun valor del formaluraio y debemos permitir.
     if ( !this.form.valid ) return;
     
     switch ( this.form.get('action')?.value ) {
       case '1':
-        console.log('option 1')
-        this.addFolioToBirthCertificate();
+        /* Generar Folio */
+        this.addFolio( false, false ); //has reverse: false
         return;
       
       case '2':
-        console.log('option 2')
+        /* Generar Reverso */
         this.addReverse();
         // this.extras();
         return;
       
       case '3':
-        console.log('option 3')
+        /* Generar Reverso y Folio */
+        this.addFolio( true, false ); //has reverse: true
         return;
 
       case '4':
-        console.log('option 4')
-        this.GenerateFrame();
+        /* Generar Marco */
+        this.addFrame( false );
         return;
       
       case '5':
-        console.log('option 5')
+        /* Generar Marco con Folio y Reverso */
+        this.addFrame( true );
         return;
     
       default:
-        console.log('any option')
+        console.log('any option');
+        //sweet alert.
         return;
     }
 
@@ -266,25 +288,25 @@ export class FoliosComponent implements OnInit, OnDestroy {
       });
     }
 
-  async addReverse() {
+  async addReverse( birthCertificateModified?: Uint8Array ) {
     /* when birth certificate is not loaded */
     if ( !this.birthCertificateBytes ) return;
     if (!this.ReversePDFBytes) return;
 
-    // form must have CURP written
+    // TODO: validate : form must have CURP written
 
     try {
       // Load the birth certificate PDF
-      const birthCertificateDoc = await PDFDocument.load(this.birthCertificateBytes);
+      const birthCertificateDoc = await PDFDocument.load(
+        birthCertificateModified !== undefined
+        ? birthCertificateModified
+        : this.birthCertificateBytes
+      );
       
       // Load the reverse PDF
       const reverseDoc = await PDFDocument.load(this.ReversePDFBytes);
       const [reversePage] = reverseDoc.getPages();
-      // const {  height:heightAlias } = reversePage.getSize();
-      // Load the bold font
-      // const boldFont = await reverseDoc.embedFont(StandardFonts.HelveticaBold);
-
-      // const boldFont = await reverseDoc.embedFont(StandardFonts.TimesRoman);
+      
       const boldFont = await reverseDoc.embedFont(StandardFonts.TimesRomanBold);
       const Helvetica = await reverseDoc.embedFont(StandardFonts.Helvetica);
       // Draw "gob" in black red
@@ -356,21 +378,6 @@ export class FoliosComponent implements OnInit, OnDestroy {
         height: 65,
       });
 
-      // Load the font file
-      /* TODO: PENDING TO SET CORRECT FONT */
-      /* const bitterFontBytes = fs.readFileSync('src/assets/fonts/Bitter-Bold.ttf');
-  
-      // Embed the font into the document
-      const bitterFont = await reverseDoc.embedFont(bitterFontBytes);
-
-      // Example: Draw text with the Bitter font
-      reversePage.drawText('Text with Bitter font', {
-        x: 50,
-        y: heightAlias - 100,
-        size: 12,
-        font: bitterFont,
-        color: rgb(0, 0, 0),
-      }); */
 
       // Get the pages from the reverse PDF
       const reversePages = await birthCertificateDoc.copyPages(reverseDoc, reverseDoc.getPageIndices());
@@ -382,24 +389,9 @@ export class FoliosComponent implements OnInit, OnDestroy {
   
       // Serialize the combined PDF to bytes
       const combinedPdfBytes = await birthCertificateDoc.save();
-  
-      // Create a Blob from the combined PDF bytes
-      const blob = new Blob([combinedPdfBytes], { type: 'application/pdf' });
-  
-      // Create a link element
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'Acta_con_Reverso.pdf';
-  
-      // Append the link to the body (required for Firefox)
-      document.body.appendChild(link);
-  
-      // Trigger the download by programmatically clicking the link
-      link.click();
-  
-      // Clean up by removing the link and revoking the object URL
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
+      
+      this.generateBlob( combinedPdfBytes, 'ACTA-CON-REVERSO' )  
+      
     } catch (error) {
       console.error('Error adding reverse PDF:', error);
     }
@@ -409,11 +401,17 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
   async extras() {
     if (!this.ReversePDFBytes) return;
+    if ( !this.birthCertificateBytes ) return;
+
     try {
+
+      // Load the birth certificate PDF
+      const birthCertificateDoc = await PDFDocument.load(this.birthCertificateBytes);
       
       const reverseDoc = await PDFDocument.load(this.ReversePDFBytes);
         const [reversePage] = reverseDoc.getPages();
   
+        
         // Draw a white rectangle to cover the content
         reversePage.drawRectangle({
           x: 27,
@@ -445,9 +443,10 @@ export class FoliosComponent implements OnInit, OnDestroy {
     }
   }
 
-  async addFolioToBirthCertificate() {
+  async addFolio( hasReverse: boolean, hasFrame: boolean ) {
     /* when birth certificate is not loaded */
     if ( !this.birthCertificateBytes ) return;
+    if ( hasReverse && !this.birthCertificateWithFrame ) return;
 
     const randomNumber1 = this.generateRandomNumberString(1);
     const randomNumber7 = this.generateRandomNumberString(7);
@@ -456,8 +455,14 @@ export class FoliosComponent implements OnInit, OnDestroy {
     const barcodeBytes = await this.generateBarcode(`A0${ randomNumber1 } ${ randomNumber7 }`); 
 
     // Load the birth certificate PDF and convert it to an image
-    const birthCertificateDoc = await PDFDocument.load( this.birthCertificateBytes );
+    const birthCertificateDoc = await PDFDocument.load( 
+      (hasReverse && hasFrame)
+      ? this.birthCertificateWithFrame! 
+      : this.birthCertificateBytes
+    );
     const [birthCertificatePage] = birthCertificateDoc.getPages();
+
+    //TODO: si birthCertificatePage es mayor a una pagina podrías lanzar un error, validacion pendiente.
 
     // Get dimensions of the birthCertificatePage
     const { width, height } = birthCertificatePage.getSize();
@@ -493,32 +498,13 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
     // Save the PDF and trigger download
     const pdfBytes = await birthCertificateDoc.save();
-    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'folio.pdf';
-    link.click();
 
-  }
+    if ( hasReverse ) { 
+      this.addReverse( pdfBytes )
+      return;
+    }
 
-  async GenerateFrame() {
-    console.log('aaabbcc')
-
-    await this.checkIfBothFilesLoaded();
-
-    if ( this.modifiedPdfBytes ) {
-
-      /* Generate a Blob */
-      const blob = new Blob([this.modifiedPdfBytes], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'modified-birth-certificate.pdf';
-      link.click();
-
-    } else {
-      console.log('segundo')
-      alert('Please upload a PDF file.');
-    } 
+    this.generateBlob( pdfBytes, 'ACTA-CON-FOLIO' );
 
   }
 
