@@ -4,9 +4,7 @@
           <!-- Parte izquierda: Logo e íconos -->
           <div class="flex items-center">
              <!-- Logo -->
-             <!-- <a [routerLink]="'/dashboard'" class="flex items-center">
-                <img src="../../../../assets/png/ag-swift.png" class="h-8 mr-3 min-w-[80px]" alt="Adroit Logo" />
-             </a> -->
+             
              <!-- Iconos a la izquierda del logo -->
              <div class="flex items-center ml-4">
                 <!-- Ícono 1 -->
@@ -42,7 +40,7 @@
              <div class="relative mr-3">
                 <input type="search"
                    class="pl-10 border-none bg-grayInputText pr-4 py-1 rounded-lg text-sm focus:ring-0 w-48"
-                   placeholder="Search">
+                   placeholder="Search" readonly>
                 <div class="absolute inset-y-0 left-0 flex items-center pl-3">
                    <!-- <fa-icon [icon]="faSearch" class="text-grayGridText"></fa-icon> -->
                 </div>
@@ -117,7 +115,7 @@
             <form
                [formGroup]="form"
                class="bg-grayBGForm border-grayMediumText lg:w-[100%] w-full rounded-r-none rounded-md"
-            >
+            > <!-- grayBGForm -->
                <!-- primera columna -->
                <div class="">
 
@@ -127,8 +125,8 @@
                   <div class="flex flex-col xs:flex-row items-start font-sans text-blueCurrency text-sm sm:text-lg">
 
                      <h2 class="w-64 min-[435px]:w-96  md:w-auto truncate">
-                        <a (click)="null" class="text-grayMediumText hover:text-blueCurrency cursor-pointer">aaaa/ </a>
-                        <span class="text-md text-blueCurrency">aaaaaaaa</span>
+                        <a (click)="null" class="text-grayMediumText hover:text-blueCurrency cursor-pointer">EDICIÓN / </a>
+                        <span class="text-md text-blueCurrency">ACTAS</span>
                      </h2>
 
                   </div>
@@ -140,45 +138,32 @@
                   </div>
 
                   <!-- primer contenedor -->
-                  <div class=" bg-white rounded-md m-1.5 xs:m-3 border border-grayMediumText">
+                  <div class=" bg-white rounded-md m-1.5 xs:m-3 border border-grayMediumText h-screen">
 
                   <div class="flex text-xs border-grayMediumText border-b-[1.5px]">
 
                      <div class="min-h-[40px] flex-1 border-r-0 border-grayMediumText w-[85%] flex items-center justify-start pl-2 pr-2">
                         
-                        <div class="ml-auto">
+                        <!-- <div class="ml-auto">
                         <input
                            (click)="generateFile()"
                            class="border-[1.5px] rounded-lg cursor-pointer w-auto min-[388px]:w-[80px] text-sm h-[25px] text-greenButton border-greenButton"
                            type="button" id="Generar"
                            value="Generar"
                         />
-                        </div>
+                        </div> -->
                         
                      </div>
 
-                     <div class="min-h-[40px] flex-none text-center items-end border-l-[1px] border-grayMediumText flex justify-center p-2">
-                        <div class="flex items-end text-center">
-
-                        <div>
-                           <div
-                              class="flex flex-col"
-                           >
-                              <span class="font-sans text-xs sm:text-sm font-semibold text-blueCurrency pb-0 text-right w-full leading-none sm:w-full sm:leading-none" data-cy="total-invoices-bills">cccc</span>
-                              <span class="font-sans text-xs sm:text-sm font-semibold text-grayGridText mt-[-0.1em] text-right w-full leading-none sm:w-full sm:leading-none">eeeee</span>
-                           </div>
-                        </div>
-
-                        </div>
-                     </div>
+                     
 
                      <div class="min-h-[40px] flex-none text-center items-end border-l-[1px] border-grayMediumText flex justify-center p-2">
                         <div class="flex items-end text-center">
 
                         <div>
                            <div class="flex flex-col">
-                              <span class="font-sans text-xs sm:text-sm font-semibold text-blueCurrency pb-0 text-right w-full leading-none sm:w-full sm:leading-none" data-cy="total-journal-entries">cccccdddddddd</span>
-                              <span class="font-sans text-xs sm:text-sm font-semibold text-grayGridText mt-[-0.1em] text-right w-full leading-none sm:w-full sm:leading-none">aaaaaaaabbbbbbbb</span>
+                              <span class="font-sans text-xs sm:text-sm font-semibold text-blueCurrency pb-0 text-right w-full leading-none sm:w-full sm:leading-none">Gestión</span>
+                              <span class="font-sans text-xs sm:text-sm font-semibold text-grayGridText mt-[-0.1em] text-right w-full leading-none sm:w-full sm:leading-none">Usuarios</span>
                            </div>
                         </div>
 
@@ -189,19 +174,19 @@
 
                   <div class="flex flex-col justify-center items-center p-2 my-2 mx-4">
 
-                     <div class="flex mb-2">
+                     <div class="flex mb-4 mt-8">
                         <!-- campo 1 -->
                         <div>
                            <div class="flex flex-col sm:flex-row  sm:items-center sm:space-x-2 mb-1 sm:mb-0 pt-1">
-                              <div class="sm:pl-12 w-[200px]">
+                              <div class="sm:pl-12 w-[300px]">
                                   <label for="action"
-                                      class="font-sans text-grayMenuText font-semibold text-xs sm:text-left block sm:mb-0">
+                                      class="font-sans text-grayMenuText font-semibold text-md sm:text-left block sm:mb-0">
                                       Seleccione una acción 
                                   </label>
                               </div>
-                              <div class="relative flex-grow w-full">
+                              <div class="relative flex-grow w-[300px]">
                                   <select id="country" formControlName="action"
-                                      class="relative flex-grow w-full">
+                                      class="relative flex-grow w-full text-md">
                                       <!-- Opciones de ejemplo, reemplaza con tus propias opciones -->
                                       <option value="0"></option>
                                       <option value="1">Generar Folio</option>
@@ -218,17 +203,17 @@
                         <!-- Fin Campo 1 -->
                      </div>
 
-                     <div class="flex mb-2" [ngClass]="{'hidden': !hasState}">
+                     <div class="flex mb-4" [ngClass]="{'hidden': !hasState}">
                         <!-- campo 2-->
                         <div>
                            <div class="flex flex-col sm:flex-row  sm:items-center sm:space-x-2 mb-1 sm:mb-0 pt-1">
-                              <div class="sm:pl-12 w-[200px]">
+                              <div class="sm:pl-12 w-[300px]">
                                   <label for="state"
-                                      class="font-sans text-grayMenuText font-semibold text-xs sm:text-left block sm:mb-0">
+                                      class="font-sans text-grayMenuText font-semibold text-md sm:text-left block sm:mb-0">
                                       Seleccione el Estado
                                   </label>
                               </div>
-                              <div class="relative flex-grow w-full">
+                              <div class="relative flex-grow w-[300px]">
                                   <select id="country" formControlName="state"
                                       class="relative flex-grow w-full">
                                       <!-- Opciones de ejemplo, reemplaza con tus propias opciones -->
@@ -273,19 +258,19 @@
                         <!-- Fin Campo 2-->
                      </div>
 
-                     <div class="flex mb-2">
+                     <div class="flex mb-4">
                         <!-- campo 3-->
                         <div>
                            <div class="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-2 mb-1 sm:mb-0 pt-1">
-                              <div class="sm:pl-12 w-[200px] sm:w-auto min-[776px]:w-[200px]">
+                              <div class="sm:pl-12 w-[300px] sm:w-auto min-[776px]:w-[300px]">
                                   <label for="curp"
-                                      class="font-sans text-grayMenuText font-semibold text-xs sm:text-left block sm:mb-0">
+                                      class="font-sans text-grayMenuText font-semibold text-md sm:text-left block sm:mb-0">
                                       CURP
                                   </label>
                               </div>
-                              <div class="relative flex-grow w-full sm:w-[200px] min-[1470px]:w-[300px]">
+                              <div class="relative flex-grow w-full sm:w-[300px] min-[1470px]:w-[300px]">
                                   <input type="text" id="curp" formControlName="curp"
-                                      class="block w-full bg-transparent border-none focus:ring-0 focus:outline-none font-sans text-grayGridText text-xs text-left"
+                                      class="block w-full bg-transparent border-none focus:ring-0 focus:outline-none font-sans text-grayGridText text-md text-left"
                                       placeholder="" />
                                   <div class="h-px bg-grayGridText">
                                   </div>
@@ -295,19 +280,40 @@
                         <!-- Fin Campo 3-->
                      </div>
 
-                     <div class="flex mb-2">
+                     <div class="flex mb-4">
                         <!-- campo 4-->
                         <div>
-                           <label for="pdfFile" class="font-sans text-grayMenuText font-semibold text-xs">Agregar PDF:</label>
-                           <input 
-                              class="font-sans text-grayMenuText font-semibold text-xs"
-                              type="file" 
-                              id="pdfFile" 
-                              (change)="onFileChange($event)" 
-                              accept=".pdf"
-                           />
+                           <div class="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-2 mb-1 sm:mb-0 pt-1">
+                              <div class="sm:pl-12 w-[300px] sm:w-auto min-[776px]:w-[300px]">
+                                 <label 
+                                 for="pdfFile" 
+                                 class="font-sans text-grayMenuText font-semibold text-md"
+                                 >Agregar PDF:
+                                 </label>
+                              </div>
+                              <div class="relative flex-grow w-full sm:w-[300px] min-[1470px]:w-[300px]">
+                                 <input 
+                                    class="font-sans text-grayMenuText font-semibold text-md w-[300px]"
+                                    type="file" 
+                                    id="pdfFile" 
+                                    (change)="onFileChange($event)" 
+                                    accept=".pdf"
+                                 />
+                              </div>
+                           </div>
                         </div>
                         <!-- Fin Campo 4-->
+                     </div>
+
+                     <div class="flex justify-end mt-8 mb-2">
+                        <div class="">
+                           <input
+                              (click)="generateFile()"
+                              class="border-[1.5px] rounded-lg cursor-pointer w-auto min-[388px]:w-[100px] text-md h-[40px] text-greenButton border-greenButton"
+                              type="button" id="Generar"
+                              value="Generar"
+                           />
+                        </div>
                      </div>
 
                   </div>

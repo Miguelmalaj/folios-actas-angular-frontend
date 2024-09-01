@@ -6,8 +6,8 @@ import { PDFDocument, rgb, StandardFonts, degrees, PDFPage } from 'pdf-lib';
 import JsBarcode from 'jsbarcode';
 import { Subscription } from 'rxjs';
 import * as QRCode from 'qrcode';
-import fs from 'fs';
 import { FoliosService } from './folios-service.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-folios',
@@ -192,7 +192,12 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
     } else {
       // Handle the error (file is not a PDF)
-      alert('Please upload a valid PDF file.');
+      Swal.fire({
+        title: 'Mensaje!',
+        text: 'El archivo pdf no es válido',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      });
 
     }
   }
@@ -200,12 +205,25 @@ export class FoliosComponent implements OnInit, OnDestroy {
   async generateFile() {
 
     if ( this.form.get('action')?.value === '0' ) {
-      alert('Seleccione una acción.')
+      Swal.fire({
+        title: 'Mensaje!',
+        text: 'Seleccione una acción.',
+        icon: 'info',
+        confirmButtonText: 'OK'
+      });
       return;
     }
 
     //TODO: en ocasiones no tendremos algun valor del formaluraio y debemos permitir.
-    if ( !this.form.valid ) return;
+    if ( !this.form.valid ){
+      Swal.fire({
+        title: 'Mensaje!',
+        text: 'El formulario no ha sido completado.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+       return;
+    }
     
     switch ( this.form.get('action')?.value ) {
       case '1':
