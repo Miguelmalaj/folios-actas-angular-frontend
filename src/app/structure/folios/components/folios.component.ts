@@ -138,7 +138,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
     this.form = this.fb.group({
       action: ['0', Validators.required],
       state: [''],
-      curp: ['', Validators.required],
+      curp: [''],
       pdf: [null, Validators.required]
     })
 
@@ -149,25 +149,25 @@ export class FoliosComponent implements OnInit, OnDestroy {
   loadSuscriptions() {
     /* Listener | Suscription to actions */
     this.actionSubscription = this.form.get('action')!.valueChanges.subscribe(value => {
-      console.log('Action control value changed:', value);
+      // console.log('Action control value changed:', value);
       // Perform any logic based on the action control value change
     });
     
     this.stateSubscription = this.form.get('state')!.valueChanges.subscribe(value => {
-      console.log('state control value changed:', value);
+      // console.log('state control value changed:', value);
       // Perform any logic based on the action control value change
       if ( value !== "" ) this.loadReversePDF( value );
     });
   }
 
-  get hasState(): boolean {
+  get hasStateAndCurp(): boolean {
 
    const currentActionValue = this.form.get('action')?.value
 
     if ( 
       currentActionValue === '2' || 
       currentActionValue === '3' || 
-      currentActionValue === '3' 
+      currentActionValue === '5' 
     ) return true;
 
     return false;
@@ -204,6 +204,8 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
   async generateFile() {
 
+    // const currentActionValue = this.form.get('action')?.value;
+
     if ( this.form.get('action')?.value === '0' ) {
       Swal.fire({
         title: 'Mensaje!',
@@ -214,8 +216,24 @@ export class FoliosComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if ( 
+      (this.form.get('curp')?.value === '') &&
+      (this.form.get('action')?.value === '2' ||
+      this.form.get('action')?.value === '3' ||
+      this.form.get('action')?.value === '5')
+      ) {
+        Swal.fire({
+          title: 'Mensaje!',
+          text: 'Revisar el campo CURP.',
+          icon: 'info',
+          confirmButtonText: 'OK'
+        });
+        return;
+
+    }
+
     //TODO: en ocasiones no tendremos algun valor del formaluraio y debemos permitir.
-    if ( !this.form.valid ){
+    if ( !this.form.get('pdf')?.valid ){
       Swal.fire({
         title: 'Mensaje!',
         text: 'El formulario no ha sido completado.',
@@ -258,7 +276,6 @@ export class FoliosComponent implements OnInit, OnDestroy {
         return;
     }
 
-    return;
   }
 
     async generateBarcode(folio: string): Promise<Uint8Array> {
@@ -464,7 +481,8 @@ export class FoliosComponent implements OnInit, OnDestroy {
   async addFolio( hasReverse: boolean, hasFrame: boolean ) {
     /* when birth certificate is not loaded */
     if ( !this.birthCertificateBytes ) return;
-    if ( hasReverse && !this.birthCertificateWithFrame ) return;
+    /* Esta validación normalmente es cuando se genera marco, folio y reverso */
+    if ( hasReverse && !this.birthCertificateWithFrame && this.form.get('action')?.value === '5' ) return;
 
     const randomNumber1 = this.generateRandomNumberString(1);
     const randomNumber7 = this.generateRandomNumberString(7);

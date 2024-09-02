@@ -203,7 +203,7 @@
                         <!-- Fin Campo 1 -->
                      </div>
 
-                     <div class="flex mb-4" [ngClass]="{'hidden': !hasState}">
+                     <div class="flex mb-4" [ngClass]="{'hidden': !hasStateAndCurp}">
                         <!-- campo 2-->
                         <div>
                            <div class="flex flex-col sm:flex-row  sm:items-center sm:space-x-2 mb-1 sm:mb-0 pt-1">
@@ -258,7 +258,7 @@
                         <!-- Fin Campo 2-->
                      </div>
 
-                     <div class="flex mb-4">
+                     <div class="flex mb-4" [ngClass]="{'hidden': !hasStateAndCurp}">
                         <!-- campo 3-->
                         <div>
                            <div class="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-2 mb-1 sm:mb-0 pt-1">
@@ -309,7 +309,7 @@
                         <div class="">
                            <input
                               (click)="generateFile()"
-                              class="border-[1.5px] rounded-lg cursor-pointer w-auto min-[388px]:w-[100px] text-md h-[40px] text-greenButton border-greenButton"
+                              class="border-[1.5px] rounded-lg cursor-pointer w-auto px-2 min-[388px]:w-[100px] text-md h-[40px] text-greenButton border-greenButton"
                               type="button" id="Generar"
                               value="Generar"
                            />

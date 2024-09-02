@@ -7,3 +7,5 @@ colocar una opcion en blanco en seleccionar accion:
 
 si el susuario click en generar sin seleccionar, 
 avisar, con sweet alert.
+
+1. si es solo generar marco, no necesitamos curp
