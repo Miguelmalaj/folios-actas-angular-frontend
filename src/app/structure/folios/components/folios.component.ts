@@ -83,17 +83,17 @@ export class FoliosComponent implements OnInit, OnDestroy {
   }
 
   
-  async addFrame( hasFolio: boolean ) {
+  async addFrame( pdfDoc: Uint8Array): Promise<Uint8Array> {
 
-    if (!this.birthCertificateBytes) return;
-    if (!this.frameBytes) return;
+    /* if (!this.birthCertificateBytes) return;
+    if (!this.frameBytes) return; */
 
     // Load the frame PDF
-    const frameDoc = await PDFDocument.load(this.frameBytes);
+    const frameDoc = await PDFDocument.load(this.frameBytes!);
     const [framePage] = frameDoc.getPages();
 
     // Load the birth certificate PDF and convert it to an image
-    const birthCertificateDoc = await PDFDocument.load(this.birthCertificateBytes);
+    const birthCertificateDoc = await PDFDocument.load( pdfDoc );
     const [birthCertificatePage] = birthCertificateDoc.getPages();
     
     // Embed the birth certificate page in the frame document
@@ -111,14 +111,17 @@ export class FoliosComponent implements OnInit, OnDestroy {
     });
 
     // Save the modified PDF
-    this.birthCertificateWithFrame = await frameDoc.save();
+    // this.birthCertificateWithFrame = await frameDoc.save();
+    const pdfDocFrame = await frameDoc.save();
 
-    if ( hasFolio ) {
+    return pdfDocFrame;
+
+    /* if ( hasFolio ) {
       this.addFolio( true, true ); //has reverse: true
       return;
     }
 
-    this.generateBlob( this.birthCertificateWithFrame, 'ACTA-CON-MARCO' );
+    this.generateBlob( this.birthCertificateWithFrame, 'ACTA-CON-MARCO' ); */
 
     
   }
@@ -167,7 +170,8 @@ export class FoliosComponent implements OnInit, OnDestroy {
     if ( 
       currentActionValue === '2' || 
       currentActionValue === '3' || 
-      currentActionValue === '5' 
+      currentActionValue === '5' ||
+      currentActionValue === '6' 
     ) return true;
 
     return false;
@@ -220,7 +224,8 @@ export class FoliosComponent implements OnInit, OnDestroy {
       (this.form.get('curp')?.value === '') &&
       (this.form.get('action')?.value === '2' ||
       this.form.get('action')?.value === '3' ||
-      this.form.get('action')?.value === '5')
+      this.form.get('action')?.value === '5' ||
+      this.form.get('action')?.value === '6') 
       ) {
         Swal.fire({
           title: 'Mensaje!',
@@ -243,32 +248,65 @@ export class FoliosComponent implements OnInit, OnDestroy {
        return;
     }
     
+    if ( !this.birthCertificateBytes ) {
+      Swal.fire({
+        title: 'Mensaje!',
+        text: 'El pdf no ha sido cargado.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+       return;
+    }
+
     switch ( this.form.get('action')?.value ) {
       case '1':
         /* Generar Folio */
-        this.addFolio( false, false ); //has reverse: false
+        const pdfFolio1 = await this.addFolio( this.birthCertificateBytes ); //has reverse: false
+        this.generateBlob( pdfFolio1, this.generateRandomNumberString(10) ); 
         return;
-      
-      case '2':
-        /* Generar Reverso */
-        this.addReverse();
+        
+        case '2':
+          /* Generar Reverso */
+          if (!this.ReversePDFBytes) return;
+          const pdfReverse2 = await this.addReverse( this.birthCertificateBytes );
+          this.generateBlob( pdfReverse2, this.generateRandomNumberString(10) ); 
         // this.extras();
         return;
-      
-      case '3':
-        /* Generar Reverso y Folio */
-        this.addFolio( true, false ); //has reverse: true
-        return;
-
-      case '4':
-        /* Generar Marco */
-        this.addFrame( false );
-        return;
-      
-      case '5':
-        /* Generar Marco con Folio y Reverso */
-        this.addFrame( true );
-        return;
+        
+        case '3':
+          /* Generar Folio y Reverso */
+          if (!this.ReversePDFBytes) return;
+          const pdfFolio3 = await this.addFolio( this.birthCertificateBytes );
+          const pdfReverse3 = await this.addReverse( pdfFolio3 );
+          this.generateBlob( pdfReverse3, this.generateRandomNumberString(10) ); 
+          // this.addFolio( true, false ); //has reverse: true
+          return;
+          
+        case '4':
+          /* Generar Marco */
+          if (!this.frameBytes) return;
+          const pdfFrame4 = await this.addFrame( this.birthCertificateBytes );
+          this.generateBlob( pdfFrame4, this.generateRandomNumberString(10) ); 
+          return;
+          
+        case '5':
+          /* Generar Marco con Folio y Reverso */
+          if (!this.ReversePDFBytes) return;
+          if (!this.frameBytes) return;
+          const pdfFrame5 = await this.addFrame( this.birthCertificateBytes );
+          const pdfFolio5 = await this.addFolio( pdfFrame5 );
+          const pdfReverse5 = await this.addReverse( pdfFolio5 );
+          this.generateBlob( pdfReverse5, this.generateRandomNumberString(10) ); 
+          return;
+        
+        case '6':
+          /* Generar Marco con Folio y Reverso */
+          if (!this.ReversePDFBytes) return;
+          if (!this.frameBytes) return;
+          const pdfFrame6 = await this.addFrame( this.birthCertificateBytes );
+          const pdfReverse6 = await this.addReverse( pdfFrame6 );
+          this.generateBlob( pdfReverse6, this.generateRandomNumberString(10) ); 
+          return;
     
       default:
         console.log('any option');
@@ -323,23 +361,24 @@ export class FoliosComponent implements OnInit, OnDestroy {
       });
     }
 
-  async addReverse( birthCertificateModified?: Uint8Array ) {
+  async addReverse( pdfDoc: Uint8Array ): Promise<Uint8Array> {
     /* when birth certificate is not loaded */
-    if ( !this.birthCertificateBytes ) return;
-    if (!this.ReversePDFBytes) return;
+    // if ( !this.birthCertificateBytes ) return;
+    // if (!this.ReversePDFBytes) return;
 
     // TODO: validate : form must have CURP written
 
     try {
       // Load the birth certificate PDF
-      const birthCertificateDoc = await PDFDocument.load(
+      const birthCertificateDoc = await PDFDocument.load( pdfDoc );
+      /* const birthCertificateDoc = await PDFDocument.load(
         birthCertificateModified !== undefined
         ? birthCertificateModified
         : this.birthCertificateBytes
-      );
+      ); */
       
       // Load the reverse PDF
-      const reverseDoc = await PDFDocument.load(this.ReversePDFBytes);
+      const reverseDoc = await PDFDocument.load(this.ReversePDFBytes!);
       const [reversePage] = reverseDoc.getPages();
       
       const boldFont = await reverseDoc.embedFont(StandardFonts.TimesRomanBold);
@@ -425,10 +464,12 @@ export class FoliosComponent implements OnInit, OnDestroy {
       // Serialize the combined PDF to bytes
       const combinedPdfBytes = await birthCertificateDoc.save();
       
-      this.generateBlob( combinedPdfBytes, 'ACTA-CON-REVERSO' )  
+      return combinedPdfBytes;
+
+      // this.generateBlob( combinedPdfBytes, 'ACTA-CON-REVERSO' )  
       
     } catch (error) {
-      console.error('Error adding reverse PDF:', error);
+      return pdfDoc
     }
 
 
@@ -478,11 +519,8 @@ export class FoliosComponent implements OnInit, OnDestroy {
     }
   }
 
-  async addFolio( hasReverse: boolean, hasFrame: boolean ) {
-    /* when birth certificate is not loaded */
-    if ( !this.birthCertificateBytes ) return;
-    /* Esta validación normalmente es cuando se genera marco, folio y reverso */
-    if ( hasReverse && !this.birthCertificateWithFrame && this.form.get('action')?.value === '5' ) return;
+  // async addFolio( hasReverse: boolean, hasFrame: boolean ) {
+  async addFolio( pdfDoc : Uint8Array ): Promise<Uint8Array> {
 
     const randomNumber1 = this.generateRandomNumberString(1);
     const randomNumber7 = this.generateRandomNumberString(7);
@@ -491,14 +529,9 @@ export class FoliosComponent implements OnInit, OnDestroy {
     const barcodeBytes = await this.generateBarcode(`A0${ randomNumber1 } ${ randomNumber7 }`); 
 
     // Load the birth certificate PDF and convert it to an image
-    const birthCertificateDoc = await PDFDocument.load( 
-      (hasReverse && hasFrame)
-      ? this.birthCertificateWithFrame! 
-      : this.birthCertificateBytes
-    );
+    const birthCertificateDoc = await PDFDocument.load( pdfDoc );
+    
     const [birthCertificatePage] = birthCertificateDoc.getPages();
-
-    //TODO: si birthCertificatePage es mayor a una pagina podrías lanzar un error, validacion pendiente.
 
     // Get dimensions of the birthCertificatePage
     const { width, height } = birthCertificatePage.getSize();
@@ -507,40 +540,35 @@ export class FoliosComponent implements OnInit, OnDestroy {
     const barcodeImage = await birthCertificateDoc.embedPng(barcodeBytes);
 
     // Load the bold font
-  const boldFont = await birthCertificateDoc.embedFont(StandardFonts.HelveticaBold);
+    const boldFont = await birthCertificateDoc.embedFont(StandardFonts.HelveticaBold);
 
-    birthCertificatePage.drawImage(barcodeImage, {
-      x: 50,         // Position from the left
-      y: height - 93, // Position from the bottom (top of page)
-      width: 126,    // Adjust width as needed
-      height: 25,    // Adjust height as needed
-    })
+      birthCertificatePage.drawImage(barcodeImage, {
+        x: 50,         // Position from the left
+        y: height - 93, // Position from the bottom (top of page)
+        width: 126,    // Adjust width as needed
+        height: 25,    // Adjust height as needed
+      })
 
-    birthCertificatePage.drawText('FOLIO', {
-      x: 78,
-      y: height - 57, // Adjust y coordinate as needed
-      size: 11,
-      font: boldFont,
-      color: rgb(0, 0, 0),
-    });
-    
-    birthCertificatePage.drawText(`A0${ randomNumber1 } ${ randomNumber7 }`, {
-      x: 70,
-      y: height - 71, // Adjust y coordinate for the second line
-      size: 11,
-      font: boldFont,
-      color: rgb(0, 0, 0),
-    });
+      birthCertificatePage.drawText('FOLIO', {
+        x: 78,
+        y: height - 57, // Adjust y coordinate as needed
+        size: 11,
+        font: boldFont,
+        color: rgb(0, 0, 0),
+      });
+      
+      birthCertificatePage.drawText(`A0${ randomNumber1 } ${ randomNumber7 }`, {
+        x: 70,
+        y: height - 71, // Adjust y coordinate for the second line
+        size: 11,
+        font: boldFont,
+        color: rgb(0, 0, 0),
+      });
 
-    // Save the PDF and trigger download
-    const pdfBytes = await birthCertificateDoc.save();
+      // Save the PDF and trigger download
+      const pdfBytes = await birthCertificateDoc.save();
 
-    if ( hasReverse ) { 
-      this.addReverse( pdfBytes )
-      return;
-    }
-
-    this.generateBlob( pdfBytes, 'ACTA-CON-FOLIO' );
+      return pdfBytes;
 
   }
 
