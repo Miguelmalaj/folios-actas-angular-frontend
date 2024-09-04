@@ -142,6 +142,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
       action: ['0', Validators.required],
       state: [''],
       curp: [''],
+      fileName: [''],
       pdf: [null, Validators.required]
     })
 
@@ -182,8 +183,11 @@ export class FoliosComponent implements OnInit, OnDestroy {
     const file = event.target.files[0];
     if (file && file.type === 'application/pdf') {
 
+      const fileName = file.name;
+
       this.form.patchValue({
-        pdf: file
+        pdf: file,
+        fileName: fileName 
       });
       this.form.get('pdf')?.updateValueAndValidity();
 
@@ -262,15 +266,21 @@ export class FoliosComponent implements OnInit, OnDestroy {
       case '1':
         /* Generar Folio */
         const pdfFolio1 = await this.addFolio( this.birthCertificateBytes ); //has reverse: false
-        this.generateBlob( pdfFolio1, this.generateRandomNumberString(10) ); 
+        this.generateBlob( 
+          pdfFolio1, 
+          this.form.get('fileName')?.value 
+        ); 
         return;
         
         case '2':
           /* Generar Reverso */
           if (!this.ReversePDFBytes) return;
           const pdfReverse2 = await this.addReverse( this.birthCertificateBytes );
-          this.generateBlob( pdfReverse2, this.generateRandomNumberString(10) ); 
-        // this.extras();
+          this.generateBlob( 
+            pdfReverse2, 
+            this.getFinalFileName()
+          ); 
+        
         return;
         
         case '3':
@@ -278,7 +288,11 @@ export class FoliosComponent implements OnInit, OnDestroy {
           if (!this.ReversePDFBytes) return;
           const pdfFolio3 = await this.addFolio( this.birthCertificateBytes );
           const pdfReverse3 = await this.addReverse( pdfFolio3 );
-          this.generateBlob( pdfReverse3, this.generateRandomNumberString(10) ); 
+
+          this.generateBlob( 
+            pdfReverse3, 
+            this.getFinalFileName()
+          ); 
           // this.addFolio( true, false ); //has reverse: true
           return;
           
@@ -286,26 +300,40 @@ export class FoliosComponent implements OnInit, OnDestroy {
           /* Generar Marco */
           if (!this.frameBytes) return;
           const pdfFrame4 = await this.addFrame( this.birthCertificateBytes );
-          this.generateBlob( pdfFrame4, this.generateRandomNumberString(10) ); 
+
+          this.generateBlob( 
+            pdfFrame4, 
+            this.form.get('fileName')?.value 
+          ); 
           return;
           
         case '5':
           /* Generar Marco con Folio y Reverso */
           if (!this.ReversePDFBytes) return;
           if (!this.frameBytes) return;
+
           const pdfFrame5 = await this.addFrame( this.birthCertificateBytes );
           const pdfFolio5 = await this.addFolio( pdfFrame5 );
           const pdfReverse5 = await this.addReverse( pdfFolio5 );
-          this.generateBlob( pdfReverse5, this.generateRandomNumberString(10) ); 
+
+          this.generateBlob( 
+            pdfReverse5, 
+            this.getFinalFileName()
+          ); 
           return;
         
         case '6':
           /* Generar Marco con Folio y Reverso */
           if (!this.ReversePDFBytes) return;
           if (!this.frameBytes) return;
+
           const pdfFrame6 = await this.addFrame( this.birthCertificateBytes );
           const pdfReverse6 = await this.addReverse( pdfFrame6 );
-          this.generateBlob( pdfReverse6, this.generateRandomNumberString(10) ); 
+
+          this.generateBlob( 
+            pdfReverse6, 
+            this.getFinalFileName()
+          ); 
           return;
     
       default:
@@ -628,6 +656,10 @@ export class FoliosComponent implements OnInit, OnDestroy {
       rotate: degrees(270),
     });
 
+  }
+
+  getFinalFileName(): string {
+    return this.form.get('curp')?.value !== '' ? this.form.get('curp')?.value : this.form.get('fileName')?.value 
   }
 
 }
