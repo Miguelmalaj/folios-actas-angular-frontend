@@ -8,6 +8,9 @@ import { Subscription } from 'rxjs';
 import * as QRCode from 'qrcode';
 import { FoliosService } from './folios-service.service';
 import Swal from 'sweetalert2';
+import { AuthService } from '../../../services/auth/auth.service';
+import { WebSocketService } from '../../../services/auth/web-socket.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-folios',
@@ -32,6 +35,9 @@ export class FoliosComponent implements OnInit, OnDestroy {
     private fb: FormBuilder, 
     private http: HttpClient,
     private foliosService: FoliosService ,
+    private router: Router,
+    private authService: AuthService,
+    private webSocketService: WebSocketService
   ) {
     // Load the birth certificate frame
     this.loadFramePdf();
@@ -68,6 +74,10 @@ export class FoliosComponent implements OnInit, OnDestroy {
     if (this.stateSubscription) {
       this.stateSubscription.unsubscribe();
     }
+
+    this.webSocketService.disconnect();
+    console.log('Component destroyed. WebSocket connection closed.');
+
   }
 
   loadFramePdf() {
@@ -660,6 +670,13 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
   getFinalFileName(): string {
     return this.form.get('curp')?.value !== '' ? this.form.get('curp')?.value : this.form.get('fileName')?.value 
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.webSocketService.disconnect();
+    this.router.navigate(['/login'])
+    console.log('Logged out.');
   }
 
 }

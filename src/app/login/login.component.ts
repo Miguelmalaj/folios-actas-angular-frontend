@@ -2,6 +2,8 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { AfterViewInit, Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../services/auth/auth.service';
+import { WebSocketService } from '../services/auth/web-socket.service';
 
 @Component({
   selector: 'app-login',
@@ -29,7 +31,9 @@ export class LoginComponent implements AfterViewInit {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService,
+    private webSocketService: WebSocketService
   ) {
     this.loginForm = this.fb.group({
       email: ['', Validators.required],
@@ -55,46 +59,27 @@ export class LoginComponent implements AfterViewInit {
     this.submitted = true;
 
     if ( this.loginForm.valid ) {
-      try {
-
       const { email, password } = this.form;
 
-      if (email === 'usuario' && password === 'prueba') {
-        // Credentials are valid, proceed with the login process
-        console.log('Login successful!');
-        // You can navigate to another page or perform other actions here
-        // this.router.navigate(['/dashboard'])
-        this.router.navigate(['/folios'])
+      this.authService.login(email, password).subscribe(
+        token => {
+          console.log('Logged in with token:', token);
+          this.webSocketService.disconnect(); // Disconnect any existing WebSocket connection
+          this.webSocketService.connect(token); // Connect with the new token
+          this.router.navigate(['/folios'])
+        },
+        error => {
+          console.error('Login failed:', error);
+          this.errorMessage = 'Invalid email or password!';
+          this.showError = true;
+          this.submitted = false;
 
-      } else {
-        // Invalid credentials
-        this.errorMessage = 'Invalid email or password!';
-        this.showError = true;
-
-        // Hide the error message after 3 seconds
-        setTimeout(() => this.showError = false, 3000);
-      }
-        
-      } catch ( error: any ) {
-        // Check the type of error based on the statusText property
-        if (error?.statusText === 'Internal Server Error') {
-          this.errorMessage = 'Server error!';
-        } else if (error?.statusText === 'Unauthorized') {
-          this.errorMessage = 'Unauthorized access!';
-        } else {
-          // Handle generic or unknown errors
-          this.errorMessage = 'Unknown login error. Please try again later.';
+          setTimeout(() => this.showError = false, 3000);
         }
+      );
 
-        // Display the error toast
-        this.showError = true;
-        // Hide the error toast after 3 seconds
-        setTimeout(() => this.showError = false, 3000);
-        
-      } finally {
-
-      }
     }
   }
+  
 
 }
