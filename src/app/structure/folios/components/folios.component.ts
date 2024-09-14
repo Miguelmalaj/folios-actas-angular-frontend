@@ -354,50 +354,50 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
   }
 
-    async generateBarcode(folio: string): Promise<Uint8Array> {
-      const canvas = document.createElement('canvas');
-      JsBarcode(canvas, folio, {
-        format: 'CODE128A',        // Barcode format
-        displayValue: false,      // Display human-readable text
-        height: 15,          // Barcode height
-        width: 5,
-      });
-  
-      // Convert canvas to a PNG image
-      return new Promise((resolve) => {
-        canvas.toBlob((blob) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const arrayBuffer = reader.result as ArrayBuffer;
-            resolve(new Uint8Array(arrayBuffer));
-          };
-          reader.readAsArrayBuffer(blob as Blob);
-        });
-      });
-    }
+  async generateBarcode(folio: string): Promise<Uint8Array> {
+    const canvas = document.createElement('canvas');
+    JsBarcode(canvas, folio, {
+      format: 'CODE128A',        // Barcode format
+      displayValue: false,      // Display human-readable text
+      height: 15,          // Barcode height
+      width: 5,
+    });
 
-    async generateQRCode(curp: string): Promise<Uint8Array> {
-      const canvas = document.createElement('canvas');
-    
-      // Generate the QR code and draw it on the canvas
-      await QRCode.toCanvas(canvas, curp, {
-        errorCorrectionLevel: 'H', // High error correction level
-        width: 200,                // Width of the QR code
-        margin: 1,                 // Margin around the QR code
+    // Convert canvas to a PNG image
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const arrayBuffer = reader.result as ArrayBuffer;
+          resolve(new Uint8Array(arrayBuffer));
+        };
+        reader.readAsArrayBuffer(blob as Blob);
       });
-    
-      // Convert canvas to a PNG image and return it as a Uint8Array
-      return new Promise((resolve) => {
-        canvas.toBlob((blob) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const arrayBuffer = reader.result as ArrayBuffer;
-            resolve(new Uint8Array(arrayBuffer));
-          };
-          reader.readAsArrayBuffer(blob as Blob);
-        });
+    });
+  }
+
+  async generateQRCode(curp: string): Promise<Uint8Array> {
+    const canvas = document.createElement('canvas');
+  
+    // Generate the QR code and draw it on the canvas
+    await QRCode.toCanvas(canvas, curp, {
+      errorCorrectionLevel: 'H', // High error correction level
+      width: 200,                // Width of the QR code
+      margin: 1,                 // Margin around the QR code
+    });
+  
+    // Convert canvas to a PNG image and return it as a Uint8Array
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const arrayBuffer = reader.result as ArrayBuffer;
+          resolve(new Uint8Array(arrayBuffer));
+        };
+        reader.readAsArrayBuffer(blob as Blob);
       });
-    }
+    });
+  }
 
   async addReverse( pdfDoc: Uint8Array ): Promise<Uint8Array> {
     /* when birth certificate is not loaded */
@@ -672,11 +672,52 @@ export class FoliosComponent implements OnInit, OnDestroy {
     return this.form.get('curp')?.value !== '' ? this.form.get('curp')?.value : this.form.get('fileName')?.value 
   }
 
+  redirectPanel() {
+    console.log('redirect to panel', this.authService.isUserAdmin());
+    
+    if ( !this.authService.isUserAdmin() ) {
+      Swal.fire({
+        title: 'Mensaje!',
+        text: 'No cuenta con permisos, consulte con su administrador.',
+        icon: 'info',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
+
+  }
+
+  permissionFolio() {
+    return this.authService.hasUserFolio();
+  }
+  
+  permissionReverso() {
+    return this.authService.hasUserReverso();
+  }
+  
+  permissionReversoFolio() {
+    return this.authService.hasUserReversoFolio();
+  }
+  
+  permissionMarco() {
+    return this.authService.hasUserMarco();
+  }
+  
+  permissionMarcoFolioReverso() {
+    return this.authService.hasUserMarcoFolioReverso();
+  }
+  
+  permissionMarcoReverso() {
+    return this.authService.hasUserMarcoReverso();
+  }
+
+
+
   logout(): void {
     this.authService.logout();
     this.webSocketService.disconnect();
-    this.router.navigate(['/login'])
-    console.log('Logged out.');
+    // this.router.navigate(['/login'])
+    // console.log('Logged out.');
   }
 
 }
