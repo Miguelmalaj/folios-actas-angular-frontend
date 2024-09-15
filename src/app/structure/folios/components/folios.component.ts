@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { PDFDocument, rgb, StandardFonts, degrees, PDFPage } from 'pdf-lib';
-// import BwipJs from 'bwip-js';
+
 import JsBarcode from 'jsbarcode';
 import { Subscription } from 'rxjs';
 import * as QRCode from 'qrcode';
@@ -74,9 +74,6 @@ export class FoliosComponent implements OnInit, OnDestroy {
     if (this.stateSubscription) {
       this.stateSubscription.unsubscribe();
     }
-
-    this.webSocketService.disconnect();
-    console.log('Component destroyed. WebSocket connection closed.');
 
   }
 
@@ -684,6 +681,8 @@ export class FoliosComponent implements OnInit, OnDestroy {
       });
       return;
     }
+
+    this.router.navigate(['/panel'])
 
   }
 
