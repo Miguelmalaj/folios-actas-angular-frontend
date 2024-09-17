@@ -181,7 +181,9 @@
                                  <td class="pr-3 pl-3 py-2">{{ user.marcoReverso ? 'Yes' : 'No' }}</td>
                                  <td class="pr-3 pl-3 py-2">
                                    <!-- Add an edit button or action here -->
-                                   <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">
+                                   <button
+                                   (click)="editUser( user )" 
+                                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">
                                      Edit
                                    </button>
                                  </td>

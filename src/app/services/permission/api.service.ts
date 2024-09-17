@@ -16,4 +16,9 @@ export class ApiService {
     return this.http.get<UserResponse[]>( `${this.apiUrl}/auth/users` );
   }
 
+  // Method to update a user by ID
+  updateUser(id: string, updatedUserData: Partial<UserResponse>): Observable<UserResponse> {
+    return this.http.patch<UserResponse>(`${this.apiUrl}/auth/users/${id}`, updatedUserData);
+  }
+
 }

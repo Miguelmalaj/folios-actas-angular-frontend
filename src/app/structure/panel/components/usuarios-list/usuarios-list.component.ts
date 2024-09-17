@@ -29,4 +29,8 @@ export class UsuariosListComponent implements OnInit {
     this.router.navigate(['/folios'])
   }
 
+  editUser( item: any ) {
+    this.router.navigate(['/permisos', `${item._id}|${item.username}`])
+  }
+
 }

@@ -4,6 +4,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { UsuariosEditComponent } from './components/usuarios-edit/usuarios-edit.component';
 import { UsuariosListComponent } from './components/usuarios-list/usuarios-list.component';
 import { PanelUsuariosRoutingModule } from './panel-usuarios-routing.module';
+import { ReactiveFormsModule } from '@angular/forms';
 
 
 
@@ -15,7 +16,8 @@ import { PanelUsuariosRoutingModule } from './panel-usuarios-routing.module';
   imports: [
     CommonModule,
     HttpClientModule,
-    PanelUsuariosRoutingModule
+    PanelUsuariosRoutingModule,
+    ReactiveFormsModule
   ]
 })
 export class PanelUsuariosModule { }
