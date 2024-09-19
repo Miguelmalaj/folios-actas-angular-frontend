@@ -25,7 +25,8 @@ export class WebSocketService {
     // this.socket = io('https://base-api-divine-morning-3669.fly.dev', {
     localStorage.setItem('token', token);  // Store the token in local storage
 
-    this.socket = io('http://localhost:3000', {
+    // this.socket = io('http://localhost:3000', {
+    this.socket = io('https://actas-sockets-backend-production.up.railway.app/', {
       query: {
         token: token,
       },

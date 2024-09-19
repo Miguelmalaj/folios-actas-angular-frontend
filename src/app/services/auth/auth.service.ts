@@ -15,7 +15,8 @@ export class AuthService {
   private marcoFolioReverso: boolean = false;
   private marcoReverso: boolean = false;
   // private apiUrl = 'https://base-api-divine-morning-3669.fly.dev/auth/login'; // Reemplaza con la URL real de tu API
-  private apiUrl = 'http://localhost:3000/auth/login'; // Reemplaza con la URL real de tu API
+  // private apiUrl = 'http://localhost:3000/auth/login'; // Reemplaza con la URL real de tu API
+  private apiUrl = 'https://actas-sockets-backend-production.up.railway.app/auth/login'; // Reemplaza con la URL real de tu API
 
   constructor(private http: HttpClient) { 
     // console.log('constructor authService')

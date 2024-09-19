@@ -7,7 +7,8 @@ import { UserResponse } from '../../shared/interfaces/user-response.interface';
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = 'http://localhost:3000'; // Reemplaza con la URL real de tu API
+  // private apiUrl = 'http://localhost:3000'; // Reemplaza con la URL real de tu API
+  private apiUrl = 'https://actas-sockets-backend-production.up.railway.app/'; // Reemplaza con la URL real de tu API
 
   constructor( private http: HttpClient ) { }
 
