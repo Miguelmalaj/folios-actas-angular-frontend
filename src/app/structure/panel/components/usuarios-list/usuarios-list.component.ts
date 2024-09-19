@@ -21,7 +21,7 @@ export class UsuariosListComponent implements OnInit {
       const usersList: UserResponse[] = response; // Store the result in a constant with its type
       this.users = usersList; // Assign the constant to the class property
 
-      console.log('response', this.users)
+      // console.log('response', this.users)
     });
   }
 

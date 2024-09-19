@@ -48,14 +48,14 @@ export class UsuariosEditComponent implements OnInit {
 
   onSubmit(): void {
     if (this.form.valid) {
-      console.log(this.form.value);
+      // console.log(this.form.value);
       // Handle form submission logic here
       const updatedUserData = this.form.value;
     
     // Call updateUser from ApiService
     this.apiService.updateUser(this.id, updatedUserData).subscribe(
       (response: any) => {
-        console.log('User updated successfully:', response);
+        // console.log('User updated successfully:', response);
         this.router.navigate(['/panel'])
       },
       (error) => {

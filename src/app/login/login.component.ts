@@ -63,7 +63,7 @@ export class LoginComponent implements AfterViewInit {
 
       this.authService.login(email, password).subscribe(
         token => {
-          console.log('Logged in with token:', token);
+          // console.log('Logged in with token:', token);
           this.webSocketService.disconnect(); // Disconnect any existing WebSocket connection
           this.webSocketService.connect(token); // Connect with the new token
           this.router.navigate(['/folios'])

@@ -344,7 +344,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
           return;
     
       default:
-        console.log('any option');
+        // console.log('any option');
         //sweet alert.
         return;
     }
@@ -670,7 +670,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
   }
 
   redirectPanel() {
-    console.log('redirect to panel', this.authService.isUserAdmin());
+    // console.log('redirect to panel', this.authService.isUserAdmin());
     
     if ( !this.authService.isUserAdmin() ) {
       Swal.fire({
