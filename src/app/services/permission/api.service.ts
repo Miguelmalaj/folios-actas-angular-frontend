@@ -2,13 +2,14 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { UserResponse } from '../../shared/interfaces/user-response.interface';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   // private apiUrl = 'http://localhost:3000'; // Reemplaza con la URL real de tu API
-  private apiUrl = 'https://actas-sockets-backend-production.up.railway.app'; // Reemplaza con la URL real de tu API
+  private apiUrl = environment.apiUrl; // Reemplaza con la URL real de tu API
 
   constructor( private http: HttpClient ) { }
 

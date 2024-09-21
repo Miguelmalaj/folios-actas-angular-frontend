@@ -2,12 +2,14 @@ import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WebSocketService {
   private socket: Socket | null = null;
+  private apiUrl = environment.apiUrl;
   
   constructor(
     private authService: AuthService,
@@ -26,7 +28,7 @@ export class WebSocketService {
     localStorage.setItem('token', token);  // Store the token in local storage
 
     // this.socket = io('http://localhost:3000', {
-    this.socket = io('https://actas-sockets-backend-production.up.railway.app', {
+    this.socket = io(this.apiUrl, {
       query: {
         token: token,
       },

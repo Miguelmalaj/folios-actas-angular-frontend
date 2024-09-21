@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,7 @@ export class AuthService {
   private marcoReverso: boolean = false;
   // private apiUrl = 'https://base-api-divine-morning-3669.fly.dev/auth/login'; // Reemplaza con la URL real de tu API
   // private apiUrl = 'http://localhost:3000/auth/login'; // Reemplaza con la URL real de tu API
-  private apiUrl = 'https://actas-sockets-backend-production.up.railway.app/auth/login'; // Reemplaza con la URL real de tu API
+  private apiUrl = `${ environment.apiUrl }/auth/login`; // Reemplaza con la URL real de tu API
 
   constructor(private http: HttpClient) { 
     // console.log('constructor authService')
