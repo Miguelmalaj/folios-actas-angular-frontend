@@ -1,0 +1,4 @@
+1.-Modify package.json
+2.-npm install @angular/ssr
+3.- Add a New server Build Configuration to angular.json
+4. ng add @angular/ssr

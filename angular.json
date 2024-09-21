@@ -37,7 +37,11 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "prerender": true,
+            "ssr": {
+              "entry": "server.ts"
+            }
           },
           "configurations": {
             "production": {
@@ -71,6 +75,46 @@
             },
             "development": {
               "buildTarget": "folios-actas:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "server": {
+          "builder": "@angular-devkit/build-angular:server",
+          "options": {
+            "outputPath": "dist/folios-actas/server",
+            "main": "src/main.server.ts",
+            "tsConfig": "tsconfig.server.json",
+            "outputHashing": "media"
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "sourceMap": false,
+              "optimization": true
+            },
+            "development": {
+              "sourceMap": true,
+              "optimization": false
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve-ssr": {
+          "builder": "@nguniversal/builders:ssr-dev-server",
+          "configurations": {
+            "production": {
+              "browserTarget": "folios-actas:build:production",
+              "serverTarget": "folios-actas:server:production"
+            },
+            "development": {
+              "browserTarget": "folios-actas:build:development",
+              "serverTarget": "folios-actas:server:development"
             }
           },
           "defaultConfiguration": "development"
