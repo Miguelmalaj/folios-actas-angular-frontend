@@ -15,6 +15,8 @@ export class WebSocketService {
     private authService: AuthService,
     private router: Router,
   ) { 
+    console.log('constructor del web-socket');
+    //TODO: si tengo token cuando se construye esto conectarlo, si no dejarlo fuera.
     // Automatically reconnect on page load
     const savedToken = localStorage.getItem('token');
     if (savedToken) {
@@ -24,6 +26,8 @@ export class WebSocketService {
   }
 
   connect(token: string) {
+    //TODO: SI ya tiene el token volver a loguear.
+
     // this.socket = io('https://base-api-divine-morning-3669.fly.dev', {
     localStorage.setItem('token', token);  // Store the token in local storage
 

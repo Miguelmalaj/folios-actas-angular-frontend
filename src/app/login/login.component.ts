@@ -1,5 +1,5 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth/auth.service';
@@ -19,7 +19,7 @@ import { WebSocketService } from '../services/auth/web-socket.service';
     ])
   ]
 })
-export class LoginComponent implements AfterViewInit {
+export class LoginComponent implements AfterViewInit, OnInit {
 
   errorMessage: string = '';
   showError = false;
@@ -39,6 +39,14 @@ export class LoginComponent implements AfterViewInit {
       email: ['', Validators.required],
       password: ['', Validators.required]
     });
+  }
+  ngOnInit(): void {
+    // const savedToken = localStorage.getItem('token');
+    const savedToken = localStorage.getItem('token');
+    console.log('si hay token es este', savedToken);
+    if (savedToken) {
+      this.webSocketService.connect(savedToken);
+    }
   }
 
   get form() {
