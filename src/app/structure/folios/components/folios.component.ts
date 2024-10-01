@@ -743,7 +743,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
     this.form.patchValue({
       curp: curp,
-      state: state.toUpperCase().trim() 
+      state: state.toUpperCase().trim().replace(/[\s-]/g, '') 
     });
 
     // console.log('current form value', this.form.value)
