@@ -4,6 +4,12 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { PDFDocument, rgb, StandardFonts, degrees, PDFPage } from 'pdf-lib';
 
 import JsBarcode from 'jsbarcode';
+import * as pdfjsLib from 'pdfjs-dist';
+import 'pdfjs-dist/build/pdf.worker.min.mjs';
+
+/* import * as pdfjsWorker from '/assets/pdfjs/pdf.worker.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker; */
+
 import { Subscription } from 'rxjs';
 import * as QRCode from 'qrcode';
 import { FoliosService } from './folios-service.service';
@@ -122,14 +128,6 @@ export class FoliosComponent implements OnInit, OnDestroy {
     const pdfDocFrame = await frameDoc.save();
 
     return pdfDocFrame;
-
-    /* if ( hasFolio ) {
-      this.addFolio( true, true ); //has reverse: true
-      return;
-    }
-
-    this.generateBlob( this.birthCertificateWithFrame, 'ACTA-CON-MARCO' ); */
-
     
   }
 
@@ -167,6 +165,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
     this.stateSubscription = this.form.get('state')!.valueChanges.subscribe(value => {
       // console.log('state control value changed:', value);
       // Perform any logic based on the action control value change
+
       if ( value !== "" ) this.loadReversePDF( value );
     });
   }
@@ -202,8 +201,16 @@ export class FoliosComponent implements OnInit, OnDestroy {
       const fileReader = new FileReader();
       fileReader.onload = async ( e: any ) => {
         this.birthCertificateBytes = new Uint8Array(e.target.result);
+        // await this.extractTextFromPDF(e.target.result);
       }
       fileReader.readAsArrayBuffer(file);
+      
+      const fileReader2 = new FileReader();
+      fileReader2.onload = async ( e: any ) => {
+        // this.birthCertificateBytes = new Uint8Array(e.target.result);
+        await this.extractTextFromPDF(e.target.result);
+      }
+      fileReader2.readAsArrayBuffer(file);
 
     } else {
       // Handle the error (file is not a PDF)
@@ -670,7 +677,6 @@ export class FoliosComponent implements OnInit, OnDestroy {
   }
 
   redirectPanel() {
-    // console.log('redirect to panel', this.authService.isUserAdmin());
     
     if ( !this.authService.isUserAdmin() ) {
       Swal.fire({
@@ -710,6 +716,39 @@ export class FoliosComponent implements OnInit, OnDestroy {
     return this.authService.hasUserMarcoReverso();
   }
 
+  async extractTextFromPDF(arrayBuffer: ArrayBuffer) {
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+    let fullText = '';
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map((item: any) => item.str).join(' ');
+      fullText += pageText;
+    }
+
+    this.extractFields(fullText);
+  }
+
+  extractFields(text: string) {
+    // CURP extraction from "Clave Única de Registro de Población"
+    const curpMatch = text.match(/Clave\s+Única\s+de\s+Registro\s+de\s+Población\s+([A-Z0-9]{18})/i);
+    
+    // Estado extraction from "Entidad de Registro"
+    const estadoMatch = text.match(/Entidad\s+de\s+Registro\s+([A-Z]+)/i);
+
+    const curp = curpMatch ? curpMatch[1] : '';
+    const state = estadoMatch ? estadoMatch[1] : '';
+
+    this.form.patchValue({
+      curp: curp,
+      state: state.toUpperCase().trim() 
+    });
+
+    // console.log('current form value', this.form.value)
+   
+  }
 
 
   logout(): void {
