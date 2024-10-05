@@ -4,11 +4,11 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { PDFDocument, rgb, StandardFonts, degrees, PDFPage } from 'pdf-lib';
 
 import JsBarcode from 'jsbarcode';
-import * as pdfjsLib from 'pdfjs-dist';
-import 'pdfjs-dist/build/pdf.worker.min.mjs';
+//this way works well but with issue: 
+/* import * as pdfjsLib from 'pdfjs-dist';
+import 'pdfjs-dist/build/pdf.worker.min.mjs'; */
 
-/* import * as pdfjsWorker from '/assets/pdfjs/pdf.worker.min.mjs';
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker; */
+import * as pdfjsLib from 'pdfjs-dist';
 
 import { Subscription } from 'rxjs';
 import * as QRCode from 'qrcode';
@@ -45,6 +45,8 @@ export class FoliosComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private webSocketService: WebSocketService
   ) {
+    // Set the worker path
+    pdfjsLib.GlobalWorkerOptions.workerSrc = './assets/pdfjs/pdf.worker.min.mjs';
     // Load the birth certificate frame
     this.loadFramePdf();
     
@@ -66,6 +68,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
       (data) => {
         this.ReversePDFBytes = new Uint8Array(data);
         // this.checkIfBothFilesLoaded();
+        if ( this.form.value?.action !== '0' ) this.generateFile();
       },
       (error) => {
         console.error('Could not load frame PDF from assets:', error);
@@ -165,7 +168,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
     this.stateSubscription = this.form.get('state')!.valueChanges.subscribe(value => {
       // console.log('state control value changed:', value);
       // Perform any logic based on the action control value change
-
+      
       if ( value !== "" ) this.loadReversePDF( value );
     });
   }
@@ -208,6 +211,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
       const fileReader2 = new FileReader();
       fileReader2.onload = async ( e: any ) => {
         // this.birthCertificateBytes = new Uint8Array(e.target.result);
+        
         await this.extractTextFromPDF(e.target.result);
       }
       fileReader2.readAsArrayBuffer(file);
@@ -736,15 +740,39 @@ export class FoliosComponent implements OnInit, OnDestroy {
     const curpMatch = text.match(/Clave\s+Única\s+de\s+Registro\s+de\s+Población\s+([A-Z0-9]{18})/i);
     
     // Estado extraction from "Entidad de Registro"
-    const estadoMatch = text.match(/Entidad\s+de\s+Registro\s+([A-Z]+)/i);
+    // const estadoMatch = text.match(/Entidad\s+de\s+Registro\s+([A-Z]+)/i);
 
-    const curp = curpMatch ? curpMatch[1] : '';
-    const state = estadoMatch ? estadoMatch[1] : '';
+    // Estado extraction from "Entidad de Registro" to "Estados Unidos Mexicanos Acta de Nacimiento"
+  // const estadoMatch = text.match(/Entidad\s+de\s+Registro\s+([\w\s]+)\s+Estados\s+Unidos\s+Mexicanos\s+Acta\s+de\s+Nacimiento/i);
+  // Match all occurrences of "Entidad de Registro"
+  const estadoMatches = [...text.matchAll(/Entidad\s+de\s+Registro\s+([A-Z\s]+)\s+Estados\s+Unidos\s+Mexicanos\s+Acta\s+de\s+Nacimiento/g)];
 
+ 
+    // Check the number of matches
+    let state = '';
+    let curp = '';
+
+    if (estadoMatches.length === 1) {
+        // If there is only one match, use it
+        state = estadoMatches[0][1].trim();
+        curp = curpMatch ? curpMatch[1] : '';
+    } else if (estadoMatches.length >= 2) {
+        // If there are two or more matches, use the second one
+        state = estadoMatches[1][1].trim(); // Get the second match
+        curp = curpMatch ? curpMatch[1] : '';
+    }
+
+    if ( state === 'MEXICO') state = 'ESTADODEMEXICO'
+    if ( state === 'MICHOACAN DE OCAMPO') state = 'MICHOACAN'
+  
     this.form.patchValue({
       curp: curp,
       state: state.toUpperCase().trim().replace(/[\s-]/g, '') 
     });
+  /* const curp = curpMatch ? curpMatch[1] : '';
+    const state = estadoMatch ? estadoMatch[1] : ''; */
+
+
 
     // console.log('current form value', this.form.value)
    
