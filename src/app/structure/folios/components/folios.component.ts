@@ -744,30 +744,59 @@ export class FoliosComponent implements OnInit, OnDestroy {
   }
 
   extractFields(text: string) {
+
+    const actType = this.extractActType(text);
+    const curp = this.extractCurp(text, actType);  // Pass actType to the CURP extraction function
+    const state = this.extractState(text, actType);  // Pass actType to extractState
+    const verificationCode = curp ? '' : this.extractVerificationCode(text);
+
+console.log({text})
+console.log({curp})
+console.log({state})    
+console.log({actType})
+console.log({verificationCode})
+    // Patch form directly here
+    this.form.patchValue({
+        curp: curp ? curp : verificationCode,
+        state: state,
+    });
+
+
+    /* console.log('this is the text', text);
+
     // CURP extraction from "Clave Única de Registro de Población"
     const curpMatch = text.match(/Clave\s+Única\s+de\s+Registro\s+de\s+Población\s+([A-Z0-9]{18})/i);
-    
-    // Estado extraction from "Entidad de Registro"
-    // const estadoMatch = text.match(/Entidad\s+de\s+Registro\s+([A-Z]+)/i);
 
     // Estado extraction from "Entidad de Registro" to "Estados Unidos Mexicanos Acta de Nacimiento"
-  // const estadoMatch = text.match(/Entidad\s+de\s+Registro\s+([\w\s]+)\s+Estados\s+Unidos\s+Mexicanos\s+Acta\s+de\s+Nacimiento/i);
-  // Match all occurrences of "Entidad de Registro"
-  const estadoMatches = [...text.matchAll(/Entidad\s+de\s+Registro\s+([A-Z\s]+)\s+Estados\s+Unidos\s+Mexicanos\s+Acta\s+de\s+Nacimiento/g)];
+    const estadoMatches = [...text.matchAll(/Entidad\s+de\s+Registro\s+([A-Z\s]+)\s+Estados\s+Unidos\s+Mexicanos\s+Acta\s+de\s+Nacimiento/g)];
 
- 
+    // Act type extraction: Acta de Nacimiento, Acta de Matrimonio, Acta de Defunción
+    const actTypeMatch = text.match(/Acta\s+de\s+(Nacimiento|Matrimonio|Defunción|Defuncion)/i);
+
+    // Código de Verificación extraction
+    const verificationCodeMatch = text.match(/Código\s+de\s+Verificación\s+([A-Z0-9]+)/i);
+
     // Check the number of matches
     let state = '';
     let curp = '';
+    let actType = ''; // New variable for the act type
 
     if (estadoMatches.length === 1) {
         // If there is only one match, use it
         state = estadoMatches[0][1].trim();
         curp = curpMatch ? curpMatch[1] : '';
+
     } else if (estadoMatches.length >= 2) {
-        // If there are two or more matches, use the second one
+        // If there are two or more matches, use the second one (because the first state in some certificates wasn't correct)
         state = estadoMatches[1][1].trim(); // Get the second match
         curp = curpMatch ? curpMatch[1] : '';
+    }
+
+    // If act type was found, store it
+    if (actTypeMatch) {
+      actType = actTypeMatch[1].toUpperCase().trim();
+      console.log({ actType });
+      console.log({ verificationCodeMatch });
     }
 
     if ( state === 'MEXICO') state = 'ESTADODEMEXICO'
@@ -776,15 +805,78 @@ export class FoliosComponent implements OnInit, OnDestroy {
     this.form.patchValue({
       curp: curp,
       state: state.toUpperCase().trim().replace(/[\s-]/g, '') 
-    });
-  /* const curp = curpMatch ? curpMatch[1] : '';
-    const state = estadoMatch ? estadoMatch[1] : ''; */
-
-
-
-    // console.log('current form value', this.form.value)
+    }); */
    
   }
+
+  // Function to extract CURP
+// Function to extract CURP, now considering actType
+private extractCurp(text: string, actType: string): string {
+  let curpPattern: RegExp;
+
+  // Adjust the pattern based on the actType
+  if (actType === 'MATRIMONIO') {
+      curpPattern = /Clave\s+Única\s+de\s+Registro\s+de\s+Población\s+de\s+los\s+([A-Z0-9]{18})/i;
+  } else {
+      curpPattern = /Clave\s+Única\s+de\s+Registro\s+de\s+Población\s+([A-Z0-9]{18})/i;
+  }
+
+  const curpMatch = text.match(curpPattern);
+  return curpMatch ? curpMatch[1].toUpperCase().trim() : '';
+}
+
+// Function to extract the state with special handling for "Defunción"
+private extractState(text: string, actType: string): string {
+  let state = '';
+
+  // If actType is "Defunción", extract state between "Certificado de Defunción de la SSA" and "Entidad de Registro"
+  if (actType === 'DEFUNCIÓN') {
+      const defuncionStateMatch = text.match(/Certificado\s+de\s+Defunción\s+de\s+la\s+SSA\s+([A-Z\s]+)\s+Entidad\s+de\s+Registro/i);
+      if (defuncionStateMatch) {
+          state = defuncionStateMatch[1].trim();
+      }
+  } else {
+      // Default extraction for other act types
+      const estadoMatches = [...text.matchAll(/Entidad\s+de\s+Registro\s+([A-Z\s]+)\s+Estados\s+Unidos\s+Mexicanos\s+Acta\s+(?:de\s+Nacimiento|de\s+Matrimonio|de\s+Defunción)/g)];
+
+      if (estadoMatches.length === 1 || estadoMatches.length >= 2) {
+          state = estadoMatches[Math.min(estadoMatches.length - 1, 1)][1].trim();
+      }
+  }
+
+  // Normalize state names
+  switch (state) {
+      case 'MEXICO':
+          return 'ESTADODEMEXICO';
+      case 'MICHOACAN DE OCAMPO':
+          return 'MICHOACAN';
+      default:
+          return state.toUpperCase().trim().replace(/[\s-]/g, '');
+  }
+}
+
+// Function to extract Acta type (Nacimiento, Matrimonio, Defunción)
+private extractActType(text: string): string {
+  const actTypeMatch = text.match(/Acta\s+de\s+(Nacimiento|Matrimonio|Defunción)/i);
+  return actTypeMatch ? actTypeMatch[1].toUpperCase().trim() : '';
+}
+
+// Function to extract Código de Verificación
+private extractVerificationCode(text: string): string {
+  // First, attempt extraction using the label "Código de Verificación"
+  const verificationCodeMatch = text.match(/Código\s+de\s+Verificación\s+([A-Z0-9]+)/i);
+  let verificationCode = verificationCodeMatch ? verificationCodeMatch[1].toUpperCase().trim() : '';
+
+  // If no valid 20-character code is found, search for the last 20-character string in the text
+  if (verificationCode.length !== 20) {
+      const endOfTextCodeMatch = text.match(/[A-Z0-9]{20}(?!.*[A-Z0-9])/i);
+      if (endOfTextCodeMatch) {
+          verificationCode = endOfTextCodeMatch[0].toUpperCase().trim();
+      }
+  }
+
+  return verificationCode;
+}
 
 
   logout(): void {
