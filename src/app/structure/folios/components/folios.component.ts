@@ -416,20 +416,10 @@ export class FoliosComponent implements OnInit, OnDestroy {
   }
 
   async addReverse( pdfDoc: Uint8Array ): Promise<Uint8Array> {
-    /* when birth certificate is not loaded */
-    // if ( !this.birthCertificateBytes ) return;
-    // if (!this.ReversePDFBytes) return;
-
-    // TODO: validate : form must have CURP written
 
     try {
       // Load the birth certificate PDF
       const birthCertificateDoc = await PDFDocument.load( pdfDoc );
-      /* const birthCertificateDoc = await PDFDocument.load(
-        birthCertificateModified !== undefined
-        ? birthCertificateModified
-        : this.birthCertificateBytes
-      ); */
       
       // Load the reverse PDF
       const reverseDoc = await PDFDocument.load(this.ReversePDFBytes!);
@@ -440,7 +430,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
       // Draw "gob" in black red
       reversePage.drawText('gob', {
         x: 21,
-        y: 95, // Adjust y coordinate as needed
+        y: 99, // Adjust y coordinate as needed
         size: 20,
         font: boldFont,
         color: rgb(0.576, 0.173, 0.286), // Black red color
@@ -452,7 +442,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
       // Draw ".mx" in light gray
       reversePage.drawText('.mx', {
         x: 23 + gobWidth, // Adjust x coordinate based on the width of "gob"
-        y: 95, // Same y coordinate
+        y: 99, // Same y coordinate
         size: 20,
         font: boldFont,
         color: rgb(0.5, 0.5, 0.5), // Light gray color
@@ -496,7 +486,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
         height: 65,
       });
 
-      this.writeCURPAroundQR( reversePage )
+      this.writeCURPAroundTopQR( reversePage )
 
       /* Bottom QR */
       firstPage.drawImage(qrCodeImage, {
@@ -506,6 +496,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
         height: 65,
       });
 
+      this.writeCURPAroundBottomQR( reversePage );
 
       // Get the pages from the reverse PDF
       const reversePages = await birthCertificateDoc.copyPages(reverseDoc, reverseDoc.getPageIndices());
@@ -639,9 +630,8 @@ export class FoliosComponent implements OnInit, OnDestroy {
     return randomNumberString;
   }
 
-  writeCURPAroundQR( reversePage: PDFPage ) {
+  writeCURPAroundTopQR( reversePage: PDFPage ) {
 
-    const text = 'BEHE190618HDFRRLA9';
     const CURPValue = this.form.get('curp')?.value
    // heightAlias 792
 
@@ -677,6 +667,50 @@ export class FoliosComponent implements OnInit, OnDestroy {
     reversePage.drawText(CURPValue, {
       x: 87,
       y: 771,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(270),
+    });
+
+  }
+  
+  writeCURPAroundBottomQR( reversePage: PDFPage ) {
+
+    const CURPValue = this.form.get('curp')?.value
+   // heightAlias 792
+
+    /* Medida para Baja California */
+     /*horizontal bottom*/
+    reversePage.drawText(CURPValue, {
+      x: 24,
+      y: 15, // Adjust y coordinate as needed
+      size: 5,
+      // font: boldFont,
+      color: rgb(0, 0, 0),
+    });
+
+    /*horizontal top*/
+    reversePage.drawText(CURPValue, {
+      x: 24,
+      y: 86, // Adjust y coordinate as needed
+      size: 5,
+      // font: boldFont,
+      color: rgb(0, 0, 0),
+    });
+
+    /*vertical left*/
+    reversePage.drawText(CURPValue, {
+      x: 15,
+      y: 81,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(270),
+    });
+    
+    /*vertical right*/
+    reversePage.drawText(CURPValue, {
+      x: 87,
+      y: 81,
       size: 5,
       color: rgb(0, 0, 0),
       rotate: degrees(270),
@@ -755,52 +789,6 @@ export class FoliosComponent implements OnInit, OnDestroy {
         curp: curp ? curp : verificationCode,
         state: state,
     });
-
-
-    /* console.log('this is the text', text);
-
-    // CURP extraction from "Clave Única de Registro de Población"
-    const curpMatch = text.match(/Clave\s+Única\s+de\s+Registro\s+de\s+Población\s+([A-Z0-9]{18})/i);
-
-    // Estado extraction from "Entidad de Registro" to "Estados Unidos Mexicanos Acta de Nacimiento"
-    const estadoMatches = [...text.matchAll(/Entidad\s+de\s+Registro\s+([A-Z\s]+)\s+Estados\s+Unidos\s+Mexicanos\s+Acta\s+de\s+Nacimiento/g)];
-
-    // Act type extraction: Acta de Nacimiento, Acta de Matrimonio, Acta de Defunción
-    const actTypeMatch = text.match(/Acta\s+de\s+(Nacimiento|Matrimonio|Defunción|Defuncion)/i);
-
-    // Código de Verificación extraction
-    const verificationCodeMatch = text.match(/Código\s+de\s+Verificación\s+([A-Z0-9]+)/i);
-
-    // Check the number of matches
-    let state = '';
-    let curp = '';
-    let actType = ''; // New variable for the act type
-
-    if (estadoMatches.length === 1) {
-        // If there is only one match, use it
-        state = estadoMatches[0][1].trim();
-        curp = curpMatch ? curpMatch[1] : '';
-
-    } else if (estadoMatches.length >= 2) {
-        // If there are two or more matches, use the second one (because the first state in some certificates wasn't correct)
-        state = estadoMatches[1][1].trim(); // Get the second match
-        curp = curpMatch ? curpMatch[1] : '';
-    }
-
-    // If act type was found, store it
-    if (actTypeMatch) {
-      actType = actTypeMatch[1].toUpperCase().trim();
-      console.log({ actType });
-      console.log({ verificationCodeMatch });
-    }
-
-    if ( state === 'MEXICO') state = 'ESTADODEMEXICO'
-    if ( state === 'MICHOACAN DE OCAMPO') state = 'MICHOACAN'
-  
-    this.form.patchValue({
-      curp: curp,
-      state: state.toUpperCase().trim().replace(/[\s-]/g, '') 
-    }); */
    
   }
 
