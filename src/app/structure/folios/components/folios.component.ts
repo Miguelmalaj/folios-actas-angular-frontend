@@ -750,11 +750,6 @@ export class FoliosComponent implements OnInit, OnDestroy {
     const state = this.extractState(text, actType);  // Pass actType to extractState
     const verificationCode = curp ? '' : this.extractVerificationCode(text);
 
-console.log({text})
-console.log({curp})
-console.log({state})    
-console.log({actType})
-console.log({verificationCode})
     // Patch form directly here
     this.form.patchValue({
         curp: curp ? curp : verificationCode,
