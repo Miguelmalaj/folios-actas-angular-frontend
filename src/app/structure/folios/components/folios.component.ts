@@ -158,6 +158,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
       action: ['0', Validators.required],
       state: [''],
       curp: [''],
+      verificationCode: [''],
       fileName: [''],
       pdf: [null, Validators.required]
     })
@@ -676,12 +677,12 @@ export class FoliosComponent implements OnInit, OnDestroy {
   
   writeCURPAroundBottomQR( reversePage: PDFPage ) {
 
-    const CURPValue = this.form.get('curp')?.value
+    const verificationCodeValue = this.form.get('verificationCode')?.value
    // heightAlias 792
 
     /* Medida para Baja California */
      /*horizontal bottom*/
-    reversePage.drawText(CURPValue, {
+    reversePage.drawText(verificationCodeValue, {
       x: 24,
       y: 15, // Adjust y coordinate as needed
       size: 5,
@@ -690,7 +691,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
     });
 
     /*horizontal top*/
-    reversePage.drawText(CURPValue, {
+    reversePage.drawText(verificationCodeValue, {
       x: 24,
       y: 86, // Adjust y coordinate as needed
       size: 5,
@@ -699,7 +700,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
     });
 
     /*vertical left*/
-    reversePage.drawText(CURPValue, {
+    reversePage.drawText(verificationCodeValue, {
       x: 15,
       y: 81,
       size: 5,
@@ -708,7 +709,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
     });
     
     /*vertical right*/
-    reversePage.drawText(CURPValue, {
+    reversePage.drawText(verificationCodeValue, {
       x: 87,
       y: 81,
       size: 5,
@@ -782,12 +783,13 @@ export class FoliosComponent implements OnInit, OnDestroy {
     const actType = this.extractActType(text);
     const curp = this.extractCurp(text, actType);  // Pass actType to the CURP extraction function
     const state = this.extractState(text, actType);  // Pass actType to extractState
-    const verificationCode = curp ? '' : this.extractVerificationCode(text);
+    const verificationCode = this.extractVerificationCode(text);
 
     // Patch form directly here
     this.form.patchValue({
         curp: curp ? curp : verificationCode,
         state: state,
+        verificationCode: verificationCode
     });
    
   }
