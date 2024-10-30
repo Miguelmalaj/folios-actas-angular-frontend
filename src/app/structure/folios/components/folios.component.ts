@@ -849,12 +849,14 @@ private extractActType(text: string): string {
 // Function to extract Código de Verificación
 private extractVerificationCode(text: string): string {
   // First, attempt extraction using the label "Código de Verificación"
-  const verificationCodeMatch = text.match(/Código\s+de\s+Verificación\s+([A-Z0-9]+)/i);
+  // const verificationCodeMatch = text.match(/Código\s+de\s+Verificación\s+([A-Z0-9]+)/i);
+  const verificationCodeMatch = text.match(/Código\s+de\s+Verificación\s+([A-Z0-9]{20})(?=\b|[^A-Z0-9])/i);
   let verificationCode = verificationCodeMatch ? verificationCodeMatch[1].toUpperCase().trim() : '';
 
   // If no valid 20-character code is found, search for the last 20-character string in the text
   if (verificationCode.length !== 20) {
-      const endOfTextCodeMatch = text.match(/[A-Z0-9]{20}(?!.*[A-Z0-9])/i);
+      // const endOfTextCodeMatch = text.match(/[A-Z0-9]{20}(?!.*[A-Z0-9])/i);
+      const endOfTextCodeMatch = text.match(/[A-Z0-9]{20}(?=\b|[^A-Z0-9])(?!.*[A-Z0-9]{20})/i);
       if (endOfTextCodeMatch) {
           verificationCode = endOfTextCodeMatch[0].toUpperCase().trim();
       }
