@@ -139,16 +139,16 @@ export class FoliosComponent implements OnInit, OnDestroy {
     const blob = new Blob([finalDoc], { type: 'application/pdf' });
 
     /* This function generate the pdf file and downloads it */
-    /* const link = document.createElement('a');
+    const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `${ fileName }.pdf`;
-    link.click(); */
+    link.click();
 
     /* This fragment code opens the pdf in a new tab */
     // Create a URL for the Blob
-    const url = URL.createObjectURL(blob);
+    // const url = URL.createObjectURL(blob);
     // Open the PDF in a new tab
-    window.open(url, '_blank');
+    // window.open(url, '_blank');
 
   }
 
