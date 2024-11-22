@@ -138,16 +138,18 @@ export class FoliosComponent implements OnInit, OnDestroy {
     /* Generate a Blob */
     const blob = new Blob([finalDoc], { type: 'application/pdf' });
 
+    /* Nota: Utilizar este código para firebase */
     /* This function generate the pdf file and downloads it */
-    /* const link = document.createElement('a');
+    const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `${ fileName }.pdf`;
-    link.click(); */
+    link.click();
 
+
+    /* NOTA: Utilizar este codigo para netlify */
     /* This fragment code opens the pdf in a new tab */
     // Create a URL for the Blob
-    const url = URL.createObjectURL(blob);
-    // Open the PDF in a new tab
+    /* const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
 
     // Create a hidden download link for user convenience
@@ -159,7 +161,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
     document.body.removeChild(downloadLink);
 
     // Revoke the URL after opening the new tab and clicking the download link
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url); */
 
   }
 
