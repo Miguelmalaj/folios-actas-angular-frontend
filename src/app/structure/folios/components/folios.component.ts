@@ -433,7 +433,18 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
     try {
       // Load the birth certificate PDF
-      const birthCertificateDoc = await PDFDocument.load( pdfDoc );
+      // const birthCertificateDoc = await PDFDocument.load( pdfDoc );
+
+      // Load the birth certificate PDF
+      let birthCertificateDoc = await PDFDocument.load(pdfDoc);
+
+      // Ensure birthCertificateDoc has only the first page
+      if (birthCertificateDoc.getPageCount() > 1) {
+        const newDoc = await PDFDocument.create();
+        const [firstPage] = await newDoc.copyPages(birthCertificateDoc, [0]); // Copy only the first page
+        newDoc.addPage(firstPage);
+        birthCertificateDoc = newDoc; // Replace birthCertificateDoc with the new one
+      }
       
       // Load the reverse PDF
       const reverseDoc = await PDFDocument.load(this.ReversePDFBytes!);
