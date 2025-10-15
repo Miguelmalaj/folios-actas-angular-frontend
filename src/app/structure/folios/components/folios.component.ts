@@ -4,6 +4,12 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { PDFDocument, rgb, StandardFonts, degrees, PDFPage } from 'pdf-lib';
 
 import JsBarcode from 'jsbarcode';
+//this way works well but with issue: 
+/* import * as pdfjsLib from 'pdfjs-dist';
+import 'pdfjs-dist/build/pdf.worker.min.mjs'; */
+
+import * as pdfjsLib from 'pdfjs-dist';
+
 import { Subscription } from 'rxjs';
 import * as QRCode from 'qrcode';
 import { FoliosService } from './folios-service.service';
@@ -39,6 +45,8 @@ export class FoliosComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private webSocketService: WebSocketService
   ) {
+    // Set the worker path
+    pdfjsLib.GlobalWorkerOptions.workerSrc = './assets/pdfjs/pdf.worker.min.mjs';
     // Load the birth certificate frame
     this.loadFramePdf();
     
@@ -60,6 +68,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
       (data) => {
         this.ReversePDFBytes = new Uint8Array(data);
         // this.checkIfBothFilesLoaded();
+        if ( this.form.value?.action !== '0' ) this.generateFile();
       },
       (error) => {
         console.error('Could not load frame PDF from assets:', error);
@@ -122,24 +131,37 @@ export class FoliosComponent implements OnInit, OnDestroy {
     const pdfDocFrame = await frameDoc.save();
 
     return pdfDocFrame;
-
-    /* if ( hasFolio ) {
-      this.addFolio( true, true ); //has reverse: true
-      return;
-    }
-
-    this.generateBlob( this.birthCertificateWithFrame, 'ACTA-CON-MARCO' ); */
-
     
   }
 
   generateBlob( finalDoc: Uint8Array, fileName: string ) {
     /* Generate a Blob */
     const blob = new Blob([finalDoc], { type: 'application/pdf' });
+
+    /* Nota: Utilizar este código para firebase */
+    /* This function generate the pdf file and downloads it */
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `${ fileName }.pdf`;
     link.click();
+
+
+    /* NOTA: Utilizar este codigo para netlify */
+    /* This fragment code opens the pdf in a new tab */
+    // Create a URL for the Blob
+    /* const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+
+    // Create a hidden download link for user convenience
+    const downloadLink = document.createElement('a');
+    downloadLink.href = url;
+    downloadLink.download = fileName;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+
+    // Revoke the URL after opening the new tab and clicking the download link
+    URL.revokeObjectURL(url); */
 
   }
 
@@ -149,6 +171,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
       action: ['0', Validators.required],
       state: [''],
       curp: [''],
+      verificationCode: [''],
       fileName: [''],
       pdf: [null, Validators.required]
     })
@@ -167,6 +190,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
     this.stateSubscription = this.form.get('state')!.valueChanges.subscribe(value => {
       // console.log('state control value changed:', value);
       // Perform any logic based on the action control value change
+      
       if ( value !== "" ) this.loadReversePDF( value );
     });
   }
@@ -202,8 +226,17 @@ export class FoliosComponent implements OnInit, OnDestroy {
       const fileReader = new FileReader();
       fileReader.onload = async ( e: any ) => {
         this.birthCertificateBytes = new Uint8Array(e.target.result);
+        // await this.extractTextFromPDF(e.target.result);
       }
       fileReader.readAsArrayBuffer(file);
+      
+      const fileReader2 = new FileReader();
+      fileReader2.onload = async ( e: any ) => {
+        // this.birthCertificateBytes = new Uint8Array(e.target.result);
+        
+        await this.extractTextFromPDF(e.target.result);
+      }
+      fileReader2.readAsArrayBuffer(file);
 
     } else {
       // Handle the error (file is not a PDF)
@@ -397,20 +430,21 @@ export class FoliosComponent implements OnInit, OnDestroy {
   }
 
   async addReverse( pdfDoc: Uint8Array ): Promise<Uint8Array> {
-    /* when birth certificate is not loaded */
-    // if ( !this.birthCertificateBytes ) return;
-    // if (!this.ReversePDFBytes) return;
-
-    // TODO: validate : form must have CURP written
 
     try {
       // Load the birth certificate PDF
-      const birthCertificateDoc = await PDFDocument.load( pdfDoc );
-      /* const birthCertificateDoc = await PDFDocument.load(
-        birthCertificateModified !== undefined
-        ? birthCertificateModified
-        : this.birthCertificateBytes
-      ); */
+      // const birthCertificateDoc = await PDFDocument.load( pdfDoc );
+
+      // Load the birth certificate PDF
+      let birthCertificateDoc = await PDFDocument.load(pdfDoc);
+
+      // Ensure birthCertificateDoc has only the first page
+      if (birthCertificateDoc.getPageCount() > 1) {
+        const newDoc = await PDFDocument.create();
+        const [firstPage] = await newDoc.copyPages(birthCertificateDoc, [0]); // Copy only the first page
+        newDoc.addPage(firstPage);
+        birthCertificateDoc = newDoc; // Replace birthCertificateDoc with the new one
+      }
       
       // Load the reverse PDF
       const reverseDoc = await PDFDocument.load(this.ReversePDFBytes!);
@@ -421,7 +455,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
       // Draw "gob" in black red
       reversePage.drawText('gob', {
         x: 21,
-        y: 95, // Adjust y coordinate as needed
+        y: 99, // Adjust y coordinate as needed
         size: 20,
         font: boldFont,
         color: rgb(0.576, 0.173, 0.286), // Black red color
@@ -433,7 +467,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
       // Draw ".mx" in light gray
       reversePage.drawText('.mx', {
         x: 23 + gobWidth, // Adjust x coordinate based on the width of "gob"
-        y: 95, // Same y coordinate
+        y: 99, // Same y coordinate
         size: 20,
         font: boldFont,
         color: rgb(0.5, 0.5, 0.5), // Light gray color
@@ -477,7 +511,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
         height: 65,
       });
 
-      this.writeCURPAroundQR( reversePage )
+      this.writeCURPAroundTopQR( reversePage )
 
       /* Bottom QR */
       firstPage.drawImage(qrCodeImage, {
@@ -487,6 +521,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
         height: 65,
       });
 
+      this.writeCURPAroundBottomQR( reversePage );
 
       // Get the pages from the reverse PDF
       const reversePages = await birthCertificateDoc.copyPages(reverseDoc, reverseDoc.getPageIndices());
@@ -620,9 +655,8 @@ export class FoliosComponent implements OnInit, OnDestroy {
     return randomNumberString;
   }
 
-  writeCURPAroundQR( reversePage: PDFPage ) {
+  writeCURPAroundTopQR( reversePage: PDFPage ) {
 
-    const text = 'BEHE190618HDFRRLA9';
     const CURPValue = this.form.get('curp')?.value
    // heightAlias 792
 
@@ -664,13 +698,56 @@ export class FoliosComponent implements OnInit, OnDestroy {
     });
 
   }
+  
+  writeCURPAroundBottomQR( reversePage: PDFPage ) {
+
+    const verificationCodeValue = this.form.get('verificationCode')?.value
+   // heightAlias 792
+
+    /* Medida para Baja California */
+     /*horizontal bottom*/
+    reversePage.drawText(verificationCodeValue, {
+      x: 24,
+      y: 15, // Adjust y coordinate as needed
+      size: 5,
+      // font: boldFont,
+      color: rgb(0, 0, 0),
+    });
+
+    /*horizontal top*/
+    reversePage.drawText(verificationCodeValue, {
+      x: 24,
+      y: 86, // Adjust y coordinate as needed
+      size: 5,
+      // font: boldFont,
+      color: rgb(0, 0, 0),
+    });
+
+    /*vertical left*/
+    reversePage.drawText(verificationCodeValue, {
+      x: 15,
+      y: 81,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(270),
+    });
+    
+    /*vertical right*/
+    reversePage.drawText(verificationCodeValue, {
+      x: 87,
+      y: 81,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(270),
+    });
+
+  }
 
   getFinalFileName(): string {
     return this.form.get('curp')?.value !== '' ? this.form.get('curp')?.value : this.form.get('fileName')?.value 
   }
 
   redirectPanel() {
-    // console.log('redirect to panel', this.authService.isUserAdmin());
     
     if ( !this.authService.isUserAdmin() ) {
       Swal.fire({
@@ -710,6 +787,109 @@ export class FoliosComponent implements OnInit, OnDestroy {
     return this.authService.hasUserMarcoReverso();
   }
 
+  async extractTextFromPDF(arrayBuffer: ArrayBuffer) {
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+    let fullText = '';
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map((item: any) => item.str).join(' ');
+      fullText += pageText;
+    }
+
+    this.extractFields(fullText);
+  }
+
+  extractFields(text: string) {
+
+    const actType = this.extractActType(text);
+    const curp = this.extractCurp(text, actType);  // Pass actType to the CURP extraction function
+    const state = this.extractState(text, actType);  // Pass actType to extractState
+    const verificationCode = this.extractVerificationCode(text);
+
+    // Patch form directly here
+    this.form.patchValue({
+        curp: curp ? curp : verificationCode,
+        state: state,
+        verificationCode: verificationCode
+    });
+   
+  }
+
+  // Function to extract CURP
+// Function to extract CURP, now considering actType
+private extractCurp(text: string, actType: string): string {
+  let curpPattern: RegExp;
+
+  // Adjust the pattern based on the actType
+  if (actType === 'MATRIMONIO') {
+      curpPattern = /Clave\s+Única\s+de\s+Registro\s+de\s+Población\s+de\s+los\s+([A-Z0-9]{18})/i;
+  } else {
+      curpPattern = /Clave\s+Única\s+de\s+Registro\s+de\s+Población\s+([A-Z0-9]{18})/i;
+  }
+
+  const curpMatch = text.match(curpPattern);
+  return curpMatch ? curpMatch[1].toUpperCase().trim() : '';
+}
+
+// Function to extract the state with special handling for "Defunción"
+private extractState(text: string, actType: string): string {
+  let state = '';
+
+  // If actType is "Defunción", extract state between "Certificado de Defunción de la SSA" and "Entidad de Registro"
+  if (actType === 'DEFUNCIÓN') {
+      const defuncionStateMatch = text.match(/Certificado\s+de\s+Defunción\s+de\s+la\s+SSA\s+([A-Z\s]+)\s+Entidad\s+de\s+Registro/i);
+      if (defuncionStateMatch) {
+          state = defuncionStateMatch[1].trim();
+      }
+  } else {
+      // Default extraction for other act types
+      const estadoMatches = [...text.matchAll(/Entidad\s+de\s+Registro\s+([A-Z\s]+)\s+Estados\s+Unidos\s+Mexicanos\s+Acta\s+(?:de\s+Nacimiento|de\s+Matrimonio|de\s+Defunción)/g)];
+
+      if (estadoMatches.length === 1 || estadoMatches.length >= 2) {
+          state = estadoMatches[Math.min(estadoMatches.length - 1, 1)][1].trim();
+      }
+  }
+
+  // Normalize state names
+  switch (state.trim()) {
+      case 'MEXICO':
+          return 'ESTADODEMEXICO';
+      case 'MICHOACAN DE OCAMPO':
+          return 'MICHOACAN';
+      case 'COAHUILA DE ZARAGOZA':
+          return 'COAHUILA';
+      default:
+          return state.toUpperCase().trim().replace(/[\s-]/g, '');
+  }
+}
+
+// Function to extract Acta type (Nacimiento, Matrimonio, Defunción)
+private extractActType(text: string): string {
+  const actTypeMatch = text.match(/Acta\s+de\s+(Nacimiento|Matrimonio|Defunción)/i);
+  return actTypeMatch ? actTypeMatch[1].toUpperCase().trim() : '';
+}
+
+// Function to extract Código de Verificación
+private extractVerificationCode(text: string): string {
+  // First, attempt extraction using the label "Código de Verificación"
+  // const verificationCodeMatch = text.match(/Código\s+de\s+Verificación\s+([A-Z0-9]+)/i);
+  const verificationCodeMatch = text.match(/Código\s+de\s+Verificación\s+([A-Z0-9]{20})(?=\b|[^A-Z0-9])/i);
+  let verificationCode = verificationCodeMatch ? verificationCodeMatch[1].toUpperCase().trim() : '';
+
+  // If no valid 20-character code is found, search for the last 20-character string in the text
+  if (verificationCode.length !== 20) {
+      // const endOfTextCodeMatch = text.match(/[A-Z0-9]{20}(?!.*[A-Z0-9])/i);
+      const endOfTextCodeMatch = text.match(/[A-Z0-9]{20}(?=\b|[^A-Z0-9])(?!.*[A-Z0-9]{20})/i);
+      if (endOfTextCodeMatch) {
+          verificationCode = endOfTextCodeMatch[0].toUpperCase().trim();
+      }
+  }
+
+  return verificationCode;
+}
 
 
   logout(): void {
