@@ -21,6 +21,7 @@
     "bwip-js": "^4.5.0",
     "jsbarcode": "^3.11.6",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^4.6.82",
     "qrcode": "^1.5.4",
     "rxjs": "~7.8.0",
     "socket.io-client": "^4.7.5",

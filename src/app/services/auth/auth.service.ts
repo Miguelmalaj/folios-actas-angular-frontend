@@ -15,6 +15,7 @@ export class AuthService {
   private marco: boolean = false;
   private marcoFolioReverso: boolean = false;
   private marcoReverso: boolean = false;
+  private sello: boolean = false;
   // private apiUrl = 'https://base-api-divine-morning-3669.fly.dev/auth/login'; // Reemplaza con la URL real de tu API
   // private apiUrl = 'http://localhost:3000/auth/login'; // Reemplaza con la URL real de tu API
   private apiUrl = `${ environment.apiUrl }/auth/login`; // Reemplaza con la URL real de tu API
@@ -27,15 +28,17 @@ export class AuthService {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const body = { username, password };
 
-    return this.http.post<{ accessToken: string, folio: boolean, reverso: boolean, reversoFolio: boolean, marco: boolean, marcoFolioReverso: boolean, marcoReverso: boolean, isAdmin: boolean }>(this.apiUrl, body, { headers })
+    return this.http.post<{ accessToken: string, folio: boolean, reverso: boolean, reversoFolio: boolean, marco: boolean, marcoFolioReverso: boolean, marcoReverso: boolean, sello: boolean, isAdmin: boolean }>(this.apiUrl, body, { headers })
       .pipe(
         map(response => {
+          console.log('response', response);
           this.folio = response.folio;
           this.reverso = response.reverso;
           this.reversoFolio = response.reversoFolio;
           this.marco = response.marco;
           this.marcoFolioReverso = response.marcoFolioReverso;
           this.marcoReverso = response.marcoReverso;
+          this.sello = response.sello;
           this.isAdmin = response.isAdmin;
           this.token = response.accessToken;
           return this.token;
@@ -75,6 +78,10 @@ export class AuthService {
     return this.marcoReverso;
   }
 
+  hasUserSello(): boolean {
+    return this.sello;
+  }
+
   logout(): void {
     this.token = null;
     this.folio = false;
@@ -83,6 +90,7 @@ export class AuthService {
     this.marco = false;
     this.marcoFolioReverso = false;
     this.marcoReverso = false;
+    this.sello = false;
     this.isAdmin = false;
   }
 
