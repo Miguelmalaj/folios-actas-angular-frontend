@@ -756,14 +756,14 @@ export class FoliosComponent implements OnInit, OnDestroy {
         PUEBLA: { x: width - sealDims.width - 337, y: 90 }, // bottom-right
         QUERETARO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         QUINTANAROO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
-        SANLUISPOTOSI: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
-        SINALOA: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
+        SANLUISPOTOSI: { x: width - sealDims.width - 322, y: 90 }, // bottom-right
+        SINALOA: { x: width - sealDims.width - 342, y: 90 }, // bottom-right
         SONORA: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         TABASCO: { x: width - sealDims.width - 340, y: 90 }, // bottom-right, moved left
         TAMAULIPAS: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         VERACRUZ: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         YUCATAN: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
-        ZACATECAS: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
+        ZACATECAS: { x: width - sealDims.width - 339, y: 90 }, // bottom-right
         DEFAULT: { x: width - sealDims.width - 330, y: 90 } // same bottom-right position
       };
 
