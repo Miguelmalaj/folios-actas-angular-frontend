@@ -735,7 +735,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
         AGUASCALIENTES: { x: width - sealDims.width - 330, y: 90 }, // top-left
         BAJACALIFORNIA: { x: width - sealDims.width - 334, y: 90 }, // bottom-right
         BAJACALIFORNIASUR: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
-        CAMPECHE: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
+        CAMPECHE: { x: width - sealDims.width - 340, y: 103 }, // bottom-right
         CHIAPAS: { x: width - sealDims.width - 338, y: 90 }, // bottom-right
         CHIHUAHUA: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         CIUDADDEMEXICO: { x: width - sealDims.width - 331, y: 90 }, // bottom-right
