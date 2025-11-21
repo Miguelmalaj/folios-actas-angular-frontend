@@ -76,7 +76,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
         this.http.get(imgPath, { responseType: 'arraybuffer' }).subscribe(
           (imgData) => {
             this.ReverseSealBytes = new Uint8Array(imgData);
-            console.log(`✅ Loaded seal image for ${path}`);
+            // console.log(`✅ Loaded seal image for ${path}`);
             if (this.form.value?.action !== '0') this.generateFile();
           },
           (error) => console.error(`⚠️ Could not load JPEG seal for ${path}:`, error)
