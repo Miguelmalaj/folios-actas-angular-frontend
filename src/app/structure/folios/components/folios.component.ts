@@ -750,7 +750,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
         JALISCO: { x: width - sealDims.width - 338, y: 90 }, // bottom-right
         MICHOACAN: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
         MORELOS: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
-        NAYARIT: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
+        NAYARIT: { x: width - sealDims.width - 330, y: 100 }, // bottom-right
         NUEVOLEON: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
         OAXACA: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
         PUEBLA: { x: width - sealDims.width - 337, y: 90 }, // bottom-right
