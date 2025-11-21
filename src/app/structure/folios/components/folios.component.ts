@@ -68,6 +68,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
     this.http.get(completedPath, { responseType: 'arraybuffer' }).subscribe(
       (pdfData) => {
+        this.ReversePDFBytes = new Uint8Array(pdfData);
         /* this.ReversePDFBytes = new Uint8Array(pdfData);
         // this.checkIfBothFilesLoaded();
         if (this.form.value?.action !== '0') this.generateFile(); */
