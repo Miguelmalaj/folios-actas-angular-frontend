@@ -725,7 +725,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
       // 3️⃣ Get page dimensions and decide where to place the seal
       const { width, height } = firstPage.getSize();
-      const sealScale = 0.3; // Adjust image scale here
+      const sealScale = 0.4; // Adjust image scale here
       const sealDims = sealImage.scale(sealScale);
 
       // 🔹 Example positions:
@@ -734,21 +734,21 @@ export class FoliosComponent implements OnInit, OnDestroy {
       const positionMap: Record<string, { x: number; y: number }> = {
         TLAXCALA: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         AGUASCALIENTES: { x: width - sealDims.width - 330, y: 90 }, // top-left
-        BAJACALIFORNIA: { x: width - sealDims.width - 334, y: 90 }, // bottom-right
+        BAJACALIFORNIA: { x: width - sealDims.width - 324, y: 90 }, // bottom-right
         BAJACALIFORNIASUR: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         CAMPECHE: { x: width - sealDims.width - 340, y: 103 }, // bottom-right
-        CHIAPAS: { x: width - sealDims.width - 338, y: 90 }, // bottom-right
+        CHIAPAS: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         CHIHUAHUA: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
-        CIUDADDEMEXICO: { x: width - sealDims.width - 331, y: 90 }, // bottom-right
+        CIUDADDEMEXICO: { x: width - sealDims.width - 320, y: 90 }, // bottom-right
         COAHUILA: { x: width - sealDims.width - 326, y: 100 }, // bottom-right
         COLIMA: { x: width - sealDims.width - 340, y: 100 }, // bottom-right
-        DURANGO: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
+        DURANGO: { x: width - sealDims.width - 322, y: 90 }, // bottom-right
         ESTADODEMEXICO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         EXTRANJERO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
-        GUANAJUATO: { x: width - sealDims.width - 338, y: 90 }, // bottom-right
-        GUERRERO: { x: width - sealDims.width - 341, y: 90 }, // bottom-right
+        GUANAJUATO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
+        GUERRERO: { x: width - sealDims.width - 332, y: 90 }, // bottom-right
         HIDALGO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
-        JALISCO: { x: width - sealDims.width - 338, y: 90 }, // bottom-right
+        JALISCO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         MICHOACAN: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
         MORELOS: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
         NAYARIT: { x: width - sealDims.width - 330, y: 100 }, // bottom-right
