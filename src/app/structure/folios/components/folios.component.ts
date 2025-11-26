@@ -732,7 +732,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
       // AGUASCALIENTES: { x: 40, y: height - sealDims.height - 40 }, // top-left
       // DEFAULT: { x: (width - sealDims.width) / 2, y: (height - sealDims.height) / 2 } // center
       const positionMap: Record<string, { x: number; y: number }> = {
-        TLAXCALA: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
+        TLAXCALA: { x: width - sealDims.width - 320, y: 85 }, // bottom-right
         AGUASCALIENTES: { x: width - sealDims.width - 330, y: 90 }, // top-left
         BAJACALIFORNIA: { x: width - sealDims.width - 324, y: 90 }, // bottom-right
         BAJACALIFORNIASUR: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
@@ -749,20 +749,20 @@ export class FoliosComponent implements OnInit, OnDestroy {
         GUERRERO: { x: width - sealDims.width - 332, y: 90 }, // bottom-right
         HIDALGO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         JALISCO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
-        MICHOACAN: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
-        MORELOS: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
+        MICHOACAN: { x: width - sealDims.width - 326, y: 90 }, // bottom-right
+        MORELOS: { x: width - sealDims.width - 324, y: 85 }, // bottom-right
         NAYARIT: { x: width - sealDims.width - 330, y: 100 }, // bottom-right
         NUEVOLEON: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
-        OAXACA: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
-        PUEBLA: { x: width - sealDims.width - 337, y: 90 }, // bottom-right
+        OAXACA: { x: width - sealDims.width - 326, y: 88 }, // bottom-right
+        PUEBLA: { x: width - sealDims.width - 328, y: 86 }, // bottom-right
         QUERETARO: { x: width - sealDims.width - 330, y: 100 }, // bottom-right
         QUINTANAROO: { x: width - sealDims.width - 336, y: 103 }, // bottom-right
         SANLUISPOTOSI: { x: width - sealDims.width - 322, y: 90 }, // bottom-right
         SINALOA: { x: width - sealDims.width - 342, y: 90 }, // bottom-right
         SONORA: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
-        TABASCO: { x: width - sealDims.width - 340, y: 90 }, // bottom-right, moved left
+        TABASCO: { x: width - sealDims.width - 330, y: 88 }, // bottom-right, moved left
         TAMAULIPAS: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
-        VERACRUZ: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
+        VERACRUZ: { x: width - sealDims.width - 322, y: 100 }, // bottom-right
         YUCATAN: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         ZACATECAS: { x: width - sealDims.width - 340, y: 90 }, // bottom-right
         DEFAULT: { x: width - sealDims.width - 330, y: 90 } // same bottom-right position
