@@ -30,6 +30,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
   ReversePDFBytes: Uint8Array | null = null;
   birthCertificateWithFrame: Uint8Array | null = null;
   ReverseSealBytes: Uint8Array | null = null;
+  soyMexicoBytes: Uint8Array | null = null;
 
   //formulario
   form!: FormGroup;
@@ -61,17 +62,55 @@ export class FoliosComponent implements OnInit, OnDestroy {
 
   }
 
-  loadReversePDF(path: string) {
+
+loadReversePDF(path: string) {
+  const completedPath = `assets/img/${path}.pdf`;
+  const imgPath = `assets/img/${path}.png`;
+  const soyMexicoPath = `assets/img/soymexico.png`;
+
+  // 1️⃣ Load the PDF
+  this.http.get(completedPath, { responseType: 'arraybuffer' }).subscribe(
+    (pdfData) => {
+      this.ReversePDFBytes = new Uint8Array(pdfData);
+
+      // 2️⃣ Load the seal image
+      this.http.get(imgPath, { responseType: 'arraybuffer' }).subscribe(
+        (imgData) => {
+          this.ReverseSealBytes = new Uint8Array(imgData);
+
+          // 3️⃣ Load soyMexico image only if not already loaded
+          if (!this.soyMexicoBytes) {
+            this.http.get(soyMexicoPath, { responseType: 'arraybuffer' }).subscribe(
+              (soyData) => {
+                this.soyMexicoBytes = new Uint8Array(soyData);
+                if (this.form.value?.action !== '0') this.generateFile();
+              },
+              (error) => console.error(`⚠️ Could not load soymexico.png:`, error)
+            );
+          } else {
+            // Already loaded, continue without loading again
+            if (this.form.value?.action !== '0') this.generateFile();
+          }
+        },
+        (error) => console.error(`⚠️ Could not load JPEG seal for ${path}:`, error)
+      );
+    },
+    (error) => {
+      console.error('Could not load frame PDF from assets:', error);
+    }
+  );
+}
+
+
+  /* loadReversePDF(path: string) {
 
     const completedPath = `assets/img/${path}.pdf`;
-    const imgPath = `assets/img/${path}.jpeg`;
+    const imgPath = `assets/img/${path}.png`;
+    const soyMexicoPath = `assets/img/soymexico.png`;
 
     this.http.get(completedPath, { responseType: 'arraybuffer' }).subscribe(
       (pdfData) => {
         this.ReversePDFBytes = new Uint8Array(pdfData);
-        /* this.ReversePDFBytes = new Uint8Array(pdfData);
-        // this.checkIfBothFilesLoaded();
-        if (this.form.value?.action !== '0') this.generateFile(); */
         // Then load seal image
         this.http.get(imgPath, { responseType: 'arraybuffer' }).subscribe(
           (imgData) => {
@@ -86,7 +125,7 @@ export class FoliosComponent implements OnInit, OnDestroy {
         console.error('Could not load frame PDF from assets:', error);
       }
     );
-  }
+  } */
 
   ngOnDestroy(): void {
     if (this.actionSubscription) {
@@ -714,18 +753,31 @@ export class FoliosComponent implements OnInit, OnDestroy {
       console.warn('⚠️ No seal image loaded.');
       return pdfBytes;
     }
+    
+    if (!this.soyMexicoBytes) {
+      console.warn('⚠️ No soy mexico image loaded.');
+      return pdfBytes;
+    }
 
     try {
       // 1️⃣ Load the PDF we want to modify (it can be the reverse or the final combined one)
       const pdfDoc = await PDFDocument.load(pdfBytes);
 
       // 2️⃣ Embed the seal image (JPEG)
-      const sealImage = await pdfDoc.embedJpg(this.ReverseSealBytes);
+      // const sealImage = await pdfDoc.embedJpg(this.ReverseSealBytes);
+      //https://www.freeconvert.com/image-converter
+      const sealImage = await pdfDoc.embedPng(this.ReverseSealBytes);
+      const soyMexicoImage = await pdfDoc.embedPng(this.soyMexicoBytes);
       const [firstPage] = pdfDoc.getPages();
 
       // 3️⃣ Get page dimensions and decide where to place the seal
       const { width, height } = firstPage.getSize();
-      const sealScale = 0.4; // Adjust image scale here
+
+      // 4️⃣ Get current state and pick coordinates
+      const currentState = this.form.get('state')?.value || 'DEFAULT';
+
+      const sealScale = this.getSealScaleByState(currentState);
+
       const sealDims = sealImage.scale(sealScale);
 
       // 🔹 Example positions:
@@ -733,44 +785,67 @@ export class FoliosComponent implements OnInit, OnDestroy {
       // DEFAULT: { x: (width - sealDims.width) / 2, y: (height - sealDims.height) / 2 } // center
       const positionMap: Record<string, { x: number; y: number }> = {
         TLAXCALA: { x: width - sealDims.width - 320, y: 85 }, // bottom-right
-        AGUASCALIENTES: { x: width - sealDims.width - 330, y: 90 }, // top-left
+        AGUASCALIENTES: { x: width - sealDims.width - 315, y: 85 }, // top-left
         BAJACALIFORNIA: { x: width - sealDims.width - 324, y: 90 }, // bottom-right
-        BAJACALIFORNIASUR: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
-        CAMPECHE: { x: width - sealDims.width - 340, y: 103 }, // bottom-right
+        BAJACALIFORNIASUR: { x: width - sealDims.width - 325, y: 90 }, // bottom-right
+        CAMPECHE: { x: width - sealDims.width - 330, y: 103 }, // bottom-right
         CHIAPAS: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
-        CHIHUAHUA: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
+        CHIHUAHUA: { x: width - sealDims.width - 325, y: 90 }, // bottom-right
         CIUDADDEMEXICO: { x: width - sealDims.width - 320, y: 90 }, // bottom-right
-        COAHUILA: { x: width - sealDims.width - 326, y: 100 }, // bottom-right
-        COLIMA: { x: width - sealDims.width - 340, y: 100 }, // bottom-right
+        COAHUILA: { x: width - sealDims.width - 320, y: 105 }, // bottom-right
+        COLIMA: { x: width - sealDims.width - 325, y: 105 }, // bottom-right
         DURANGO: { x: width - sealDims.width - 322, y: 90 }, // bottom-right
-        ESTADODEMEXICO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
+        ESTADODEMEXICO: { x: width - sealDims.width - 320, y: 105 }, // bottom-right
         EXTRANJERO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         GUANAJUATO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
-        GUERRERO: { x: width - sealDims.width - 332, y: 90 }, // bottom-right
-        HIDALGO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
+        GUERRERO: { x: width - sealDims.width - 332, y: 88 }, // bottom-right
+        HIDALGO: { x: width - sealDims.width - 310, y: 90 }, // bottom-right
         JALISCO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         MICHOACAN: { x: width - sealDims.width - 326, y: 90 }, // bottom-right
         MORELOS: { x: width - sealDims.width - 324, y: 85 }, // bottom-right
-        NAYARIT: { x: width - sealDims.width - 330, y: 100 }, // bottom-right
-        NUEVOLEON: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
+        NAYARIT: { x: width - sealDims.width - 315, y: 100 }, // bottom-right
+        NUEVOLEON: { x: width - sealDims.width - 325, y: 90 }, // bottom-right
         OAXACA: { x: width - sealDims.width - 326, y: 88 }, // bottom-right
         PUEBLA: { x: width - sealDims.width - 328, y: 86 }, // bottom-right
-        QUERETARO: { x: width - sealDims.width - 330, y: 100 }, // bottom-right
-        QUINTANAROO: { x: width - sealDims.width - 336, y: 103 }, // bottom-right
+        QUERETARO: { x: width - sealDims.width - 330, y: 110 }, // bottom-right
+        QUINTANAROO: { x: width - sealDims.width - 330, y: 103 }, // bottom-right
         SANLUISPOTOSI: { x: width - sealDims.width - 322, y: 90 }, // bottom-right
-        SINALOA: { x: width - sealDims.width - 342, y: 90 }, // bottom-right
-        SONORA: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
-        TABASCO: { x: width - sealDims.width - 330, y: 88 }, // bottom-right, moved left
-        TAMAULIPAS: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
-        VERACRUZ: { x: width - sealDims.width - 322, y: 100 }, // bottom-right
-        YUCATAN: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
-        ZACATECAS: { x: width - sealDims.width - 340, y: 90 }, // bottom-right
+        SINALOA: { x: width - sealDims.width - 335, y: 90 }, // bottom-right
+        SONORA: { x: width - sealDims.width - 323, y: 90 }, // bottom-right
+        TABASCO: { x: width - sealDims.width - 330, y: 105 }, // bottom-right, moved left
+        TAMAULIPAS: { x: width - sealDims.width - 320, y: 90 }, // bottom-right
+        VERACRUZ: { x: width - sealDims.width - 322, y: 90 }, // bottom-right
+        YUCATAN: { x: width - sealDims.width - 320, y: 85 }, // bottom-right
+        ZACATECAS: { x: width - sealDims.width - 332, y: 88 }, // bottom-right
         DEFAULT: { x: width - sealDims.width - 330, y: 90 } // same bottom-right position
       };
 
-      // 4️⃣ Get current state and pick coordinates
-      const currentState = this.form.get('state')?.value || 'DEFAULT';
+      
       const pos = positionMap[currentState] || positionMap['DEFAULT'];
+
+      console.log('pos.x', pos.x);
+      console.log('pos.y', pos.y);
+      console.log('sealDims.width', sealDims.width);
+      console.log('sealDims.height', sealDims.height);
+
+      // Draw a white rectangle to cover the content
+      firstPage.drawRectangle({
+        x: 190,
+        y: 100,
+        width: 170,
+        height: 60,
+        color: rgb(1, 1, 1), // White color
+        // color: rgb(1, 0, 0) // red color
+      });
+
+      // paste soy mexico 
+      firstPage.drawImage(soyMexicoImage, {
+        x: 190,
+        y: 180,
+        width: 160,
+        height: 40,
+        opacity: 0.15,
+      });
 
       // 5️⃣ Draw the image (this "pastes" it)
       firstPage.drawImage(sealImage, {
@@ -788,6 +863,85 @@ export class FoliosComponent implements OnInit, OnDestroy {
       throw error;
     }
   }
+
+  private getSealScaleByState(state: string): number {
+    switch (state) {
+      case 'TLAXCALA':
+        return 0.4;
+
+      case 'AGUASCALIENTES':
+        return 0.4;
+
+      case 'BAJACALIFORNIA':
+        return 0.4;
+
+      case 'MORELOS':
+        return 0.4;
+
+      case 'QUINTANAROO':
+        return 0.35;
+      case 'BAJACALIFORNIASUR':
+        return 0.35;
+      case 'CAMPECHE':
+        return 0.4;
+      case 'CHIAPAS':
+        return 0.4;
+      case 'CHIHUAHUA':
+        return 0.35;
+      case 'CIUDADDEMEXICO':
+        return 0.4;
+      case 'COAHUILA':
+        return 0.35;
+      case 'COLIMA':
+        return 0.4;
+      case 'DURANGO':
+        return 0.4;
+      case 'ESTADODEMEXICO':
+        return 0.4;
+      case 'GUANAJUATO':
+        return 0.4;
+      case 'GUERRERO':
+        return 0.4;
+      case 'HIDALGO':
+        return 0.4;
+      case 'JALISCO':
+        return 0.4;
+      case 'MICHOACAN':
+        return 0.4;
+      case 'NAYARIT':
+        return 0.4;
+      case 'NUEVOLEON':
+        return 0.4;
+      case 'OAXACA':
+        return 0.4;
+      case 'PUEBLA':
+        return 0.4;
+      case 'QUERETARO':
+        return 0.3;
+      case 'SANLUISPOTOSI':
+        return 0.3;
+      case 'SINALOA':
+        return 0.4;
+      case 'SONORA':
+        return 0.35;
+      case 'TABASCO':
+        return 0.4;
+      case 'TAMAULIPAS':
+        return 0.4;
+      case 'VERACRUZ':
+        return 0.4;
+      case 'YUCATAN':
+        return 0.35;
+      case 'ZACATECAS':
+        return 0.4;
+
+      // add more cases as needed…
+
+      default:
+        return 0.4; // default scale
+    }
+  }
+
 
   async extras() {
     if (!this.ReversePDFBytes) return;
