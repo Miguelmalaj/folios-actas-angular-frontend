@@ -441,6 +441,38 @@ loadReversePDF(path: string) {
           this.form.get('fileName')?.value
         );
         return;
+      
+      case '8':
+      /* Generar Folio, Reverso y Sello */
+        if (!this.ReversePDFBytes) return;
+        const pdfSeal8 = await this.addSealToReverse(this.birthCertificateBytes);
+        const pdfFolioAndSeal = await this.addFolio(pdfSeal8);
+        // this.addSeal();
+        const pdfReverseFolioSeal = await this.addReverse(pdfFolioAndSeal);
+
+        this.generateBlob(
+          pdfReverseFolioSeal,
+          this.getFinalFileName()
+        );
+        // this.addFolio( true, false ); //has reverse: true
+        return;
+      
+      case '9':
+      /* Generar Marco con Folio, Reverso y Sello */
+        if (!this.ReversePDFBytes) return;
+        if (!this.frameBytes) return;
+
+        const pdfFrame9 = await this.addFrame(this.birthCertificateBytes);
+        const pdfSealFrame = await this.addSealToReverse(pdfFrame9);
+        const pdfFolioSealFrame = await this.addFolio(pdfSealFrame);
+        // this.addSeal();
+        const pdfReverseFolioSealFrame = await this.addReverse(pdfFolioSealFrame);
+
+        this.generateBlob(
+          pdfReverseFolioSealFrame,
+          this.getFinalFileName()
+        );
+        return;
 
       default:
         // console.log('any option');
