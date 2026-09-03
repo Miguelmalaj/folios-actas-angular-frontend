@@ -6,6 +6,12 @@
 /out-tsc
 /bazel-out
 /src/environments/*
+.git
+.gitignore
+Dockerfile
+README.md
+.env
+.env.*
 
 # Node
 /node_modules

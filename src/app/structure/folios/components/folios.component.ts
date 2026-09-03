@@ -827,7 +827,7 @@ loadReversePDF(path: string) {
         COAHUILA: { x: width - sealDims.width - 320, y: 105 }, // bottom-right
         COLIMA: { x: width - sealDims.width - 325, y: 105 }, // bottom-right
         DURANGO: { x: width - sealDims.width - 322, y: 90 }, // bottom-right
-        ESTADODEMEXICO: { x: width - sealDims.width - 320, y: 105 }, // bottom-right
+        ESTADODEMEXICO: { x: width - sealDims.width - 320, y: 99 }, // bottom-right
         EXTRANJERO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         GUANAJUATO: { x: width - sealDims.width - 330, y: 90 }, // bottom-right
         GUERRERO: { x: width - sealDims.width - 332, y: 88 }, // bottom-right

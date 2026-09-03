@@ -1,0 +1,22 @@
+steps:
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "northamerica-south1-docker.pkg.dev/microservices-504519/image-registry/actas-frontend",
+        "-f",
+        "dockerfile",
+        "--platform=linux/amd64",
+        "."
+      ]
+
+  - name: "gcr.io/cloud-builders/docker",
+    args:
+      [
+        "push",
+        "northamerica-south1-docker.pkg.dev/microservices-504519/image-registry/actas-frontend"
+      ]
+
+options:
+  logging: "CLOUD_LOGGING_ONLY"
