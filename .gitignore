@@ -8,7 +8,6 @@
 /src/environments/*
 .git
 .gitignore
-Dockerfile
 README.md
 .env
 .env.*
